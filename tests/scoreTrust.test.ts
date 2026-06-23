@@ -40,6 +40,15 @@ describe('scoreTrust', () => {
     expect(plain.trustReason).toContain('not yet corroborated');
   });
 
+  it('boosts a source with strong evidence and labels it', () => {
+    const url = 'https://www.healthline.com/article';
+    const [plain] = scoreTrust([src(url)]);
+    const [strong] = scoreTrust([src(url)], { evidenceLevels: { [url]: 'systematic-review' } });
+    expect(strong.trustScore).toBeGreaterThan(plain.trustScore);
+    expect(strong.evidence).toBe('Systematic review');
+    expect(strong.trustReason).toContain('Systematic review');
+  });
+
   it('applies a recency adjustment from age in days', () => {
     const url = 'https://reuters.com/article';
     const [recent] = scoreTrust([src(url)], { ageDays: { [url]: 30 } });

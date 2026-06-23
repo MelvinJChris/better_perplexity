@@ -1,5 +1,6 @@
 import type { ScoredSource, Source } from '@/lib/types';
 import { domainPrior, hostOf } from './domainPrior';
+import { evidenceBonus, evidenceLabel, type EvidenceLevel } from './evidence';
 
 // TrustRank-style score = domain prior (the dominant signal) + corroboration
 // across independent domains (#12) + recency. Pure given precomputed signals, so
@@ -11,6 +12,8 @@ export interface TrustSignals {
   corroboratingDomains?: Record<string, number>;
   /** url -> age in days, when the source reports a publish date (recency). */
   ageDays?: Record<string, number>;
+  /** url -> detected evidence level (#54). */
+  evidenceLevels?: Record<string, EvidenceLevel>;
 }
 
 const CORROBORATION_PER_DOMAIN = 5;
@@ -38,7 +41,8 @@ function buildReason(
   host: string,
   prior: number,
   corroborations: number,
-  ageDays?: number,
+  ageDays: number | undefined,
+  level: EvidenceLevel | undefined,
 ): string {
   const parts = [`${priorTier(prior)} (${host})`];
   parts.push(
@@ -50,7 +54,8 @@ function buildReason(
     if (ageDays <= 365) parts.push('recent');
     else if (ageDays >= 365 * 4) parts.push('older source');
   }
-  return parts.join(', ');
+  const base = parts.join(', ');
+  return level ? `${evidenceLabel(level)} · ${base}` : base;
 }
 
 export function scoreTrust(sources: Source[], signals: TrustSignals = {}): ScoredSource[] {
@@ -60,15 +65,21 @@ export function scoreTrust(sources: Source[], signals: TrustSignals = {}): Score
       const prior = domainPrior(source.url);
       const corroborations = signals.corroboratingDomains?.[source.url] ?? 0;
       const ageDays = signals.ageDays?.[source.url];
+      const level = signals.evidenceLevels?.[source.url];
 
-      const raw = prior + corroborationBonus(corroborations) + recencyBonus(ageDays);
+      const raw =
+        prior +
+        corroborationBonus(corroborations) +
+        recencyBonus(ageDays) +
+        (level ? evidenceBonus(level) : 0);
       const trustScore = Math.round(Math.min(100, Math.max(0, raw)));
 
       return {
         ...source,
         trustScore,
-        trustReason: buildReason(host, prior, corroborations, ageDays),
+        trustReason: buildReason(host, prior, corroborations, ageDays, level),
         corroborations,
+        evidence: level ? evidenceLabel(level) : undefined,
       };
     })
     .sort((a, b) => b.trustScore - a.trustScore);
