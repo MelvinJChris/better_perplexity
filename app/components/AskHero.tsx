@@ -2,11 +2,13 @@
 
 import { QueryForm } from './QueryForm';
 
-// The locked lead query (CLAUDE.md demo #1) leads the examples.
+// The locked demo set (see eval/DEMO_QUERIES.md): each shows a different facet
+// of the trust layer — corroboration + scope trap, junk downranking, and a
+// reputable-source contradiction.
 const EXAMPLES = [
   'global data center electricity demand 2030 forecast TWh',
-  'Does creatine supplementation improve cognitive performance?',
-  'What is the scientific consensus on microplastics and human health?',
+  'Does vitamin C prevent the common cold?',
+  'How many trees are there on Earth?',
 ];
 
 export function AskHero({ onSubmit }: { onSubmit: (query: string) => void }) {
