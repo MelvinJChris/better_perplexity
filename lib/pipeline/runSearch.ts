@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
 import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
 import { synthesizeStream } from '@/lib/pipeline/synthesize';
+import { verify } from '@/lib/pipeline/verify';
 import type { LlmProvider } from '@/lib/providers/llm';
 import type { SearchProvider } from '@/lib/providers/search';
 import { logTrace, type QueryTrace } from '@/lib/trace/trace';
-import type { ScoredSource, Source } from '@/lib/types';
+import type { ScoredSource, Source, VerifiedAnswer } from '@/lib/types';
 
 /** Builds the trust signals for a result set: corroboration across independent
  *  domains (one batched embed) and recency from publish dates. Embedding failure
@@ -49,6 +50,7 @@ export type SearchRequest = z.infer<typeof searchRequestSchema>;
 export type SearchEvent =
   | { type: 'sources'; sources: ScoredSource[] }
   | { type: 'token'; text: string }
+  | { type: 'verification'; verified: VerifiedAnswer }
   | { type: 'trace'; trace: QueryTrace }
   | { type: 'error'; message: string };
 
@@ -79,10 +81,25 @@ export async function* runSearchEvents(
     sourceCount = scored.length;
     yield { type: 'sources', sources: scored };
 
+    let answer = '';
     for await (const chunk of synthesizeStream(query, scored, deps.llm, deps.synthesisModel)) {
-      if (chunk.text) yield { type: 'token', text: chunk.text };
+      if (chunk.text) {
+        answer += chunk.text;
+        yield { type: 'token', text: chunk.text };
+      }
       if (chunk.inputTokens !== undefined) inputTokens = chunk.inputTokens;
       if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
+    }
+
+    // Verify the finished answer against high-trust sources. A verification
+    // failure must not fail the whole query, so it degrades to no event.
+    if (answer.trim()) {
+      try {
+        const verified = await verify(answer, scored, deps.llm, { model: deps.synthesisModel });
+        yield { type: 'verification', verified };
+      } catch (err) {
+        console.warn('runSearch: verification skipped', err);
+      }
     }
 
     const trace: QueryTrace = {

@@ -40,5 +40,7 @@ export const verifiedAnswerSchema = z.object({
   text: z.string(),
   citations: z.array(citationSchema),
   unsupported: z.array(z.string()),
+  /** Set when the answer leans on out-of-scope figures (e.g. US vs global). */
+  scopeMismatch: z.string().optional(),
 });
 export type VerifiedAnswer = z.infer<typeof verifiedAnswerSchema>;
