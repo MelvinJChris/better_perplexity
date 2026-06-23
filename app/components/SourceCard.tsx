@@ -1,7 +1,6 @@
-import type { Source } from '@/lib/types';
-
-// Trust score, reason, and corroboration badge are intentionally absent here;
-// they arrive with the trust UI in #14. This card stays to url/title/snippet.
+import { trustTier } from '@/lib/trust';
+import type { ScoredSource } from '@/lib/types';
+import { TrustMeter } from './TrustMeter';
 
 function domainOf(url: string): string {
   try {
@@ -11,35 +10,65 @@ function domainOf(url: string): string {
   }
 }
 
-export function SourceCard({ index, source }: { index: number; source: Source }) {
+function CorroborationBadge({ count }: { count: number }) {
+  return (
+    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-trust-high/10 px-2 py-0.5 text-xs text-trust-high">
+      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden focusable="false">
+        <path
+          d="M6 10a3 3 0 010-4M10 6a3 3 0 010 4M6.5 8h3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="font-mono">{count}</span> independent {count === 1 ? 'domain' : 'domains'}{' '}
+      agree
+    </span>
+  );
+}
+
+export function SourceCard({ index, source }: { index: number; source: ScoredSource }) {
   const domain = domainOf(source.url);
   const monogram = (domain[0] ?? '?').toUpperCase();
+  const deemphasized = trustTier(source.trustScore) === 'low';
 
   return (
-    <li className="animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card">
-      <a
-        href={source.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group block focus-visible:outline-none"
-      >
-        <div className="flex items-center gap-2">
+    <li
+      className={`animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card ${
+        deemphasized ? 'opacity-70' : ''
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="flex h-5 w-5 items-center justify-center rounded bg-accent/10 font-mono text-[10px] font-semibold text-accent"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/10 font-mono text-[10px] font-semibold text-accent"
           >
             {monogram}
           </span>
           <span className="truncate font-mono text-xs text-muted">{domain}</span>
-          <span className="ml-auto font-mono text-xs text-muted">[{index}]</span>
+          <span className="shrink-0 font-mono text-xs text-muted">[{index}]</span>
         </div>
-        <h3 className="mt-2 line-clamp-2 text-sm font-medium text-ink group-hover:text-accent">
-          {source.title}
-        </h3>
-        {source.snippet ? (
-          <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-muted">{source.snippet}</p>
-        ) : null}
+        <TrustMeter score={source.trustScore} />
+      </div>
+
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 block text-sm font-medium text-ink hover:text-accent"
+      >
+        <span className="line-clamp-2">{source.title}</span>
       </a>
+
+      <p className="mt-1 text-xs leading-relaxed text-muted">{source.trustReason}</p>
+
+      {source.corroborations > 0 ? <CorroborationBadge count={source.corroborations} /> : null}
+
+      {source.snippet ? (
+        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{source.snippet}</p>
+      ) : null}
     </li>
   );
 }
