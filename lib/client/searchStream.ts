@@ -1,4 +1,5 @@
 import type { SearchEvent } from '@/lib/pipeline/runSearch';
+import type { ThreadContext } from '@/lib/pipeline/synthesize';
 
 // Client-side reader for the /api/search NDJSON stream. parseNdjson is pure over
 // a byte stream so it is unit-tested (CLAUDE.md lists client parsing as TDD);
@@ -30,11 +31,12 @@ export async function* parseNdjson(stream: ReadableStream<Uint8Array>): AsyncIte
 export async function* streamSearch(
   query: string,
   signal?: AbortSignal,
+  context?: ThreadContext,
 ): AsyncIterable<SearchEvent> {
   const res = await fetch('/api/search', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ query, context }),
     signal,
   });
 

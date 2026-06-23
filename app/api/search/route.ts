@@ -41,6 +41,7 @@ export async function POST(req: Request): Promise<Response> {
     search,
     llm,
     synthesisModel: llm.synthesisModel,
+    context: parsed.data.context,
   });
 
   return new Response(ndjsonStream(events), {

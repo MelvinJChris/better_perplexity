@@ -11,6 +11,13 @@ export interface SynthesisPrompt {
   user: string;
 }
 
+/** Prior turn carried into a follow-up so the answer is thread-aware without
+ *  re-fetching the earlier sources (#28). */
+export interface ThreadContext {
+  question: string;
+  answer: string;
+}
+
 const SYSTEM_INSTRUCTION = [
   'You are a research assistant. Answer the question using ONLY the numbered sources provided.',
   'Cite every claim with its source number in square brackets, like [1] or [2][3].',
@@ -19,8 +26,13 @@ const SYSTEM_INSTRUCTION = [
 ].join(' ');
 
 /** Builds the synthesis prompt from trust-ranked sources (pure, so it is unit
- *  tested). Sources are numbered in the order given; rank them before calling. */
-export function buildSynthesisPrompt(query: string, sources: ScoredSource[]): SynthesisPrompt {
+ *  tested). Sources are numbered in the order given; rank them before calling.
+ *  An optional prior turn is included as lightweight thread context. */
+export function buildSynthesisPrompt(
+  query: string,
+  sources: ScoredSource[],
+  context?: ThreadContext,
+): SynthesisPrompt {
   const list = sources
     .map((s, i) => {
       const body = s.snippet || s.text || '';
@@ -28,9 +40,13 @@ export function buildSynthesisPrompt(query: string, sources: ScoredSource[]): Sy
     })
     .join('\n\n');
 
+  const preamble = context
+    ? `Earlier in this research thread:\nQ: ${context.question}\nA: ${context.answer.slice(0, 1000)}\n\nUse it only for context; answer the new question from the sources below.\n\n`
+    : '';
+
   return {
     system: SYSTEM_INSTRUCTION,
-    user: `Question: ${query}\n\nSources:\n${list}`,
+    user: `${preamble}Question: ${query}\n\nSources:\n${list}`,
   };
 }
 
@@ -40,8 +56,9 @@ export function synthesizeStream(
   sources: ScoredSource[],
   llm: LlmProvider,
   model?: string,
+  context?: ThreadContext,
 ): AsyncIterable<CompleteChunk> {
-  const { system, user } = buildSynthesisPrompt(query, sources);
+  const { system, user } = buildSynthesisPrompt(query, sources, context);
   return llm.completeStream(user, { system, model, temperature: 0.2 });
 }
 
