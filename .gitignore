@@ -37,3 +37,6 @@ pnpm-debug.log*
 # local-only planning docs (intentionally not published)
 /CLAUDE.md
 /BUILD_PLAN.md
+
+# local tooling config (Claude Code preview, etc.)
+/.claude

@@ -4,7 +4,7 @@ A trust-weighted, contradiction-aware web research assistant. You ask a research
 question; the system searches the web, scores each source for credibility,
 surfaces where sources agree and disagree, and returns an answer where every
 claim is cited and auditable. The difference from a plain search chatbot is that
-you can see *why* a source was trusted or downranked.
+you can see _why_ a source was trusted or downranked.
 
 > Status: early development. See the [issues](../../issues) and
 > [milestones](../../milestones) for the roadmap.
@@ -15,6 +15,23 @@ Naive search trusts its sources blindly. This adds a layer that makes source
 credibility and cross-source agreement explicit, so a research or due-diligence
 user reaches a trustworthy, source-grounded answer faster than vetting sources by
 hand.
+
+## Success metrics
+
+1. Claim faithfulness: every sentence in the answer traces to a cited source.
+2. Trust-rank quality: high-credibility sources rank above low-credibility ones,
+   checked against a small hand-labeled set.
+3. Contradiction recall (stretch): flags known disagreements on the test queries.
+4. Latency: end-to-end per query, p50 and p95.
+5. Cost per query: measured from real token and search-call counts, not estimated.
+
+## Non-goals
+
+- No auth, user accounts, or cross-session persistence.
+- No mobile (desktop-first).
+- No async or background job infrastructure (named as the production path; the
+  sub-minute query does not need it).
+- Not optimized for scale: the trust layer is the point, not a scaling config.
 
 ## Stack
 
