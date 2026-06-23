@@ -1,6 +1,12 @@
 import { z } from 'zod';
+import {
+  buildContradictionGraph,
+  summarizeContradictions,
+  type GraphClaim,
+} from '@/lib/pipeline/contradictionGraph';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
 import { suggestFollowups } from '@/lib/pipeline/followups';
+import { extractMetricValue } from '@/lib/metrics';
 import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
 import { synthesizeStream, type ThreadContext } from '@/lib/pipeline/synthesize';
 import { verify } from '@/lib/pipeline/verify';
@@ -10,13 +16,14 @@ import { logTrace, type QueryTrace } from '@/lib/trace/trace';
 import type { ScoredSource, Source, VerifiedAnswer } from '@/lib/types';
 
 /** Builds the trust signals for a result set: corroboration across independent
- *  domains (one batched embed) and recency from publish dates. Embedding failure
- *  degrades to no corroboration rather than failing the query. */
+ *  domains (one batched embed) and recency from publish dates. Returns the
+ *  embeddings so the contradiction graph can reuse them at no extra cost.
+ *  Embedding failure degrades to no corroboration rather than failing the query. */
 async function buildTrustSignals(
   sources: Source[],
   llm: LlmProvider,
   now: () => number,
-): Promise<TrustSignals> {
+): Promise<{ signals: TrustSignals; embeddings: number[][] }> {
   const ageDays: Record<string, number> = {};
   for (const source of sources) {
     if (!source.publishedAt) continue;
@@ -25,8 +32,9 @@ async function buildTrustSignals(
   }
 
   const corroboratingDomains: Record<string, number> = {};
+  let embeddings: number[][] = [];
   try {
-    const embeddings = await llm.embed(sources.map((s) => `${s.title}\n${s.snippet}`));
+    embeddings = await llm.embed(sources.map((s) => `${s.title}\n${s.snippet}`));
     const counts = countCorroboratingDomains(sources, embeddings);
     sources.forEach((s, i) => {
       corroboratingDomains[s.url] = counts[i];
@@ -35,7 +43,7 @@ async function buildTrustSignals(
     console.warn('runSearch: corroboration embedding skipped', err);
   }
 
-  return { corroboratingDomains, ageDays };
+  return { signals: { corroboratingDomains, ageDays }, embeddings };
 }
 
 // The pipeline core, factored out of the route handler so it can be driven with
@@ -53,6 +61,7 @@ export type SearchEvent =
   | { type: 'sources'; sources: ScoredSource[] }
   | { type: 'token'; text: string }
   | { type: 'verification'; verified: VerifiedAnswer }
+  | { type: 'contradictions'; disputed: GraphClaim[][] }
   | { type: 'followups'; followups: string[] }
   | { type: 'trace'; trace: QueryTrace }
   | { type: 'error'; message: string };
@@ -80,7 +89,7 @@ export async function* runSearchEvents(
 
   try {
     const sources = await deps.search.search(query);
-    const signals = await buildTrustSignals(sources, deps.llm, now);
+    const { signals, embeddings } = await buildTrustSignals(sources, deps.llm, now);
     const scored = scoreTrust(sources, signals);
     sourceCount = scored.length;
     yield { type: 'sources', sources: scored };
@@ -119,6 +128,17 @@ export async function* runSearchEvents(
         console.warn('runSearch: follow-ups skipped', err);
       }
     }
+
+    // (Stretch) Contradiction graph over the sources, reusing the corroboration
+    // embeddings so it costs nothing extra. Emits only when a dispute is found.
+    const graphClaims: GraphClaim[] = sources.map((s, i) => ({
+      id: String(i),
+      sourceUrl: s.url,
+      text: s.snippet,
+      value: extractMetricValue(`${s.title} ${s.snippet}`),
+    }));
+    const disputed = summarizeContradictions(buildContradictionGraph(graphClaims, embeddings));
+    if (disputed.length > 0) yield { type: 'contradictions', disputed };
 
     const trace: QueryTrace = {
       query,
