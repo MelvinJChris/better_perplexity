@@ -7,5 +7,65 @@
 }
 
 body {
-  @apply bg-paper text-ink antialiased;
+  @apply bg-paper font-sans text-ink antialiased;
+}
+
+/* Visible keyboard focus everywhere; color is never the sole signal (issue #27). */
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-paper;
+  }
+}
+
+/* Markdown answer styling (no typography plugin; one local rhythm). */
+@layer components {
+  .answer-prose > :first-child {
+    @apply mt-0;
+  }
+  .answer-prose p {
+    @apply my-3;
+  }
+  .answer-prose h1,
+  .answer-prose h2,
+  .answer-prose h3 {
+    @apply mb-2 mt-5 font-semibold tracking-tight text-ink;
+  }
+  .answer-prose h1 {
+    @apply text-xl;
+  }
+  .answer-prose h2 {
+    @apply text-lg;
+  }
+  .answer-prose h3 {
+    @apply text-base;
+  }
+  .answer-prose ul {
+    @apply my-3 list-disc space-y-1 pl-5;
+  }
+  .answer-prose ol {
+    @apply my-3 list-decimal space-y-1 pl-5;
+  }
+  .answer-prose a {
+    @apply text-accent underline underline-offset-2;
+  }
+  .answer-prose strong {
+    @apply font-semibold text-ink;
+  }
+  .answer-prose code {
+    @apply rounded bg-ink/5 px-1 py-0.5 font-mono text-[0.85em];
+  }
+  .answer-prose blockquote {
+    @apply my-3 border-l-2 border-hairline pl-4 text-muted;
+  }
+}
+
+/* Restrained motion: honor the user's reduced-motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
