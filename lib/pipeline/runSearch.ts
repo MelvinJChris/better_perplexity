@@ -6,7 +6,7 @@ import {
 } from '@/lib/pipeline/contradictionGraph';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
 import { suggestFollowups } from '@/lib/pipeline/followups';
-import { extractMetricValue } from '@/lib/metrics';
+import { extractMetric } from '@/lib/metrics';
 import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
 import { synthesizeStream, type ThreadContext } from '@/lib/pipeline/synthesize';
 import { verify } from '@/lib/pipeline/verify';
@@ -131,12 +131,16 @@ export async function* runSearchEvents(
 
     // (Stretch) Contradiction graph over the sources, reusing the corroboration
     // embeddings so it costs nothing extra. Emits only when a dispute is found.
-    const graphClaims: GraphClaim[] = sources.map((s, i) => ({
-      id: String(i),
-      sourceUrl: s.url,
-      text: s.snippet,
-      value: extractMetricValue(`${s.title} ${s.snippet}`),
-    }));
+    const graphClaims: GraphClaim[] = sources.map((s, i) => {
+      const metric = extractMetric(`${s.title} ${s.snippet}`);
+      return {
+        id: String(i),
+        sourceUrl: s.url,
+        text: s.snippet,
+        value: metric?.value ?? null,
+        unit: metric?.unit,
+      };
+    });
     const disputed = summarizeContradictions(buildContradictionGraph(graphClaims, embeddings));
     if (disputed.length > 0) yield { type: 'contradictions', disputed };
 

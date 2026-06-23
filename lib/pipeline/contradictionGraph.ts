@@ -13,6 +13,8 @@ export interface GraphClaim {
   text: string;
   /** Comparable numeric value, when the claim states one. */
   value: number | null;
+  /** Unit of `value` (e.g. TWh, %); claims only disagree within the same unit. */
+  unit?: string;
 }
 
 export interface GraphEdge {
@@ -50,8 +52,11 @@ export function buildContradictionGraph(
       if (cosineSimilarity(embeddings[i] ?? [], embeddings[j] ?? []) < link) continue;
       const a = claims[i].value;
       const b = claims[j].value;
+      // Only compare numbers measured in the same unit, so a percentage or a
+      // follower count can never "disagree" with a TWh figure (#46).
+      const sameUnit = !!claims[i].unit && claims[i].unit === claims[j].unit;
       let relation: GraphEdge['relation'] = 'agree';
-      if (a !== null && b !== null) {
+      if (sameUnit && a !== null && b !== null) {
         const scale = Math.max(Math.abs(a), Math.abs(b)) || 1;
         if (Math.abs(a - b) > tolerance * scale) relation = 'disagree';
       }
@@ -62,28 +67,36 @@ export function buildContradictionGraph(
   return { claims, edges };
 }
 
-/** Groups claims into connected clusters that contain at least one disagreement.
- *  Each returned group is a disputed set of two or more claims. */
+/** Groups the claims that actually participate in a disagreement (an endpoint of
+ *  a disagree edge), connected through those disagreements. Agree-only neighbours
+ *  in the same embedding cluster are excluded, so a disputed group lists only the
+ *  genuinely conflicting claims (#46). Each group has two or more claims. */
 export function summarizeContradictions(graph: ContradictionGraph): GraphClaim[][] {
-  const parent = new Map<string, string>();
-  for (const c of graph.claims) parent.set(c.id, c.id);
+  const disputed = new Set<string>();
+  for (const e of graph.edges) {
+    if (e.relation === 'disagree') {
+      disputed.add(e.a);
+      disputed.add(e.b);
+    }
+  }
+  if (disputed.size === 0) return [];
 
+  const parent = new Map<string, string>();
+  for (const id of disputed) parent.set(id, id);
   const find = (x: string): string => {
     let root = x;
     while (parent.get(root) !== root) root = parent.get(root) as string;
     return root;
   };
   const union = (a: string, b: string) => parent.set(find(a), find(b));
-
-  for (const e of graph.edges) union(e.a, e.b);
-
-  const disputedRoots = new Set<string>();
-  for (const e of graph.edges) if (e.relation === 'disagree') disputedRoots.add(find(e.a));
+  for (const e of graph.edges) {
+    if (e.relation === 'disagree') union(e.a, e.b);
+  }
 
   const groups = new Map<string, GraphClaim[]>();
   for (const c of graph.claims) {
+    if (!disputed.has(c.id)) continue;
     const root = find(c.id);
-    if (!disputedRoots.has(root)) continue;
     const group = groups.get(root) ?? [];
     group.push(c);
     groups.set(root, group);
