@@ -1,8 +1,6 @@
-import { notImplemented } from '@/lib/notImplemented';
-
-// One interface for every LLM call. Gemini sits behind it for the demo;
-// swapping providers is a config change (see #7). Token counts are returned
-// so cost can be measured from real usage, not estimated.
+// One interface for every LLM call. Gemini sits behind it for the demo (see
+// lib/providers/gemini.ts); swapping providers is a config change. Token counts
+// are returned so cost can be measured from real usage, not estimated.
 
 export interface CompleteOptions {
   model?: string;
@@ -15,19 +13,22 @@ export interface CompleteResult {
   text: string;
   inputTokens: number;
   outputTokens: number;
+  /** Captured for the per-query trace (latency and cost metrics). */
+  latencyMs: number;
+  model: string;
+}
+
+/** A streamed completion fragment. Token counts arrive on the final chunk, when
+ *  the provider reports usage; text-only chunks leave them undefined. */
+export interface CompleteChunk {
+  text: string;
+  inputTokens?: number;
+  outputTokens?: number;
 }
 
 export interface LlmProvider {
   complete(prompt: string, opts?: CompleteOptions): Promise<CompleteResult>;
+  /** Streams the answer so the client can show partial results (see #9). */
+  completeStream(prompt: string, opts?: CompleteOptions): AsyncIterable<CompleteChunk>;
   embed(texts: string[]): Promise<number[][]>;
 }
-
-/** Placeholder until the Gemini provider lands in #7. */
-export const stubLlmProvider: LlmProvider = {
-  async complete() {
-    return notImplemented('llmProvider.complete');
-  },
-  async embed() {
-    return notImplemented('llmProvider.embed');
-  },
-};
