@@ -1,6 +1,11 @@
 import { getEnv } from '@/lib/env';
 import { ProviderError } from '@/lib/providers/errors';
-import type { CompleteOptions, CompleteResult, LlmProvider } from '@/lib/providers/llm';
+import type {
+  CompleteChunk,
+  CompleteOptions,
+  CompleteResult,
+  LlmProvider,
+} from '@/lib/providers/llm';
 import { RateLimitQueue } from '@/lib/providers/rateLimitQueue';
 
 // Gemini behind the llmProvider interface. The free tier is the demo default;
@@ -67,34 +72,40 @@ export class GeminiProvider implements LlmProvider {
 
   async complete(prompt: string, opts?: CompleteOptions): Promise<CompleteResult> {
     const model = opts?.model ?? this.completeModel;
-    const generationConfig: Record<string, number> = {};
-    if (opts?.temperature !== undefined) generationConfig.temperature = opts.temperature;
-    if (opts?.maxTokens !== undefined) generationConfig.maxOutputTokens = opts.maxTokens;
-
-    const body = {
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      ...(opts?.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
-      ...(Object.keys(generationConfig).length > 0 ? { generationConfig } : {}),
-    };
-
     const started = Date.now();
     const json = (await this.queue.add(() =>
-      this.post(`${GEMINI_BASE}/models/${model}:generateContent`, body),
+      this.post(`${GEMINI_BASE}/models/${model}:generateContent`, buildGenerateBody(prompt, opts)),
     )) as GeminiGenerateResponse;
     const latencyMs = Date.now() - started;
 
-    const text = (json.candidates?.[0]?.content?.parts ?? [])
-      .map((part) => part.text ?? '')
-      .join('');
     const usage = json.usageMetadata ?? {};
-
     return {
-      text,
+      text: partsText(json),
       inputTokens: usage.promptTokenCount ?? 0,
       outputTokens: usage.candidatesTokenCount ?? 0,
       latencyMs,
       model,
     };
+  }
+
+  async *completeStream(prompt: string, opts?: CompleteOptions): AsyncIterable<CompleteChunk> {
+    const model = opts?.model ?? this.completeModel;
+    // The queue gates the connection (concurrency + RPM + retry on a transient
+    // status); the body is then streamed outside the slot.
+    const res = await this.queue.add(() =>
+      this.postRaw(
+        `${GEMINI_BASE}/models/${model}:streamGenerateContent?alt=sse`,
+        buildGenerateBody(prompt, opts),
+      ),
+    );
+    for await (const json of parseSseStream(res)) {
+      const usage = json.usageMetadata;
+      yield {
+        text: partsText(json),
+        inputTokens: usage?.promptTokenCount,
+        outputTokens: usage?.candidatesTokenCount,
+      };
+    }
   }
 
   async embed(texts: string[]): Promise<number[][]> {
@@ -112,6 +123,12 @@ export class GeminiProvider implements LlmProvider {
   }
 
   private async post(url: string, body: unknown): Promise<unknown> {
+    const res = await this.postRaw(url, body);
+    return res.json();
+  }
+
+  /** POST and return the raw Response (status-checked), for streaming callers. */
+  private async postRaw(url: string, body: unknown): Promise<Response> {
     const res = await this.fetchFn(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-goog-api-key': this.apiKey },
@@ -121,7 +138,49 @@ export class GeminiProvider implements LlmProvider {
       const detail = await res.text().catch(() => '');
       throw new ProviderError(`Gemini ${res.status}: ${detail.slice(0, 200)}`, res.status);
     }
-    return res.json();
+    return res;
+  }
+}
+
+/** Builds the generateContent request body shared by complete and completeStream. */
+function buildGenerateBody(prompt: string, opts?: CompleteOptions): Record<string, unknown> {
+  const generationConfig: Record<string, number> = {};
+  if (opts?.temperature !== undefined) generationConfig.temperature = opts.temperature;
+  if (opts?.maxTokens !== undefined) generationConfig.maxOutputTokens = opts.maxTokens;
+
+  return {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    ...(opts?.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
+    ...(Object.keys(generationConfig).length > 0 ? { generationConfig } : {}),
+  };
+}
+
+/** Concatenates the text parts of the first candidate. */
+function partsText(json: GeminiGenerateResponse): string {
+  return (json.candidates?.[0]?.content?.parts ?? []).map((part) => part.text ?? '').join('');
+}
+
+/** Parses a Gemini SSE stream (alt=sse), yielding one response object per
+ *  `data:` line. Tolerates chunk boundaries splitting lines mid-stream. */
+async function* parseSseStream(res: Response): AsyncIterable<GeminiGenerateResponse> {
+  const body = res.body;
+  if (!body) return;
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let newline: number;
+    while ((newline = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, newline).trim();
+      buffer = buffer.slice(newline + 1);
+      if (!line.startsWith('data:')) continue;
+      const payload = line.slice('data:'.length).trim();
+      if (!payload || payload === '[DONE]') continue;
+      yield JSON.parse(payload) as GeminiGenerateResponse;
+    }
   }
 }
 

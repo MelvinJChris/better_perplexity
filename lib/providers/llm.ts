@@ -18,7 +18,17 @@ export interface CompleteResult {
   model: string;
 }
 
+/** A streamed completion fragment. Token counts arrive on the final chunk, when
+ *  the provider reports usage; text-only chunks leave them undefined. */
+export interface CompleteChunk {
+  text: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 export interface LlmProvider {
   complete(prompt: string, opts?: CompleteOptions): Promise<CompleteResult>;
+  /** Streams the answer so the client can show partial results (see #9). */
+  completeStream(prompt: string, opts?: CompleteOptions): AsyncIterable<CompleteChunk>;
   embed(texts: string[]): Promise<number[][]>;
 }
