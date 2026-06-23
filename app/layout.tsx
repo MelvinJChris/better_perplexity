@@ -18,9 +18,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'better_perplexity',
+  title: 'better_perplexity — clinical evidence, audited',
   description:
-    'A trust-weighted, contradiction-aware research assistant: scores source credibility, surfaces agreement vs disagreement, and cites every claim.',
+    'A clinical research assistant that scores every source on the evidence hierarchy, surfaces where studies agree and disagree, and cites every claim.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

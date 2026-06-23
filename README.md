@@ -1,17 +1,24 @@
 # better_perplexity
 
-A trust-weighted, contradiction-aware web research assistant. You ask a research
-question; the system searches the web, scores each source for credibility,
-surfaces where sources agree and disagree, and returns an answer where every
-claim is cited and auditable. The difference from a plain search chatbot is that
-you can see _why_ a source was trusted or downranked.
+A trust-weighted, contradiction-aware **clinical** research assistant. You ask a
+clinical question; the system searches the web, scores each source on an
+evidence-based credibility hierarchy, surfaces where studies agree and disagree,
+and returns an answer where every claim is cited and auditable. The difference
+from a plain search chatbot is that you can see _why_ a source was trusted or
+downranked.
 
-## Why
+## Why this, and why a vertical
 
-Naive RAG trusts its sources blindly. This adds a layer that makes source
-credibility and cross-source agreement explicit, so a research or due-diligence
-user reaches a trustworthy, source-grounded answer faster than vetting sources by
-hand. One persona, on purpose.
+Naive RAG trusts its sources blindly. Making credibility and cross-source
+agreement explicit is the wedge; committing to **healthcare** is what turns
+copyable features into a defensible product. The moat is not the scoring code (a
+competitor could copy that in a sprint), it is the curated, expert-maintainable
+**clinical credibility model**: which journals, guideline bodies, and registries
+to trust, and where a claim sits on the evidence pyramid (systematic reviews
+above RCTs, above observational studies, above preclinical work and opinion).
+Generic answer engines optimize for fast consumer answers; this optimizes for the
+job where being wrong is costly and you must defend every claim, the clinician or
+researcher vetting evidence.
 
 ## Quickstart
 
@@ -48,9 +55,12 @@ One Next.js app, one Cloud Run request, streamed to the client. The pipeline
 2. **Retrieve**: Tavily (keyword) and Exa (semantic) in parallel, fused into one
    `Source[]`, deduped by URL then by embedding near-duplicate so syndicated
    copies are not double-counted (`lib/providers/search.ts`).
-3. **Trust score**: each source gets a 0..100 score = domain prior +
-   corroboration across independent domains + recency, then a rerank and a
-   one-line reason (`lib/pipeline/scoreTrust.ts`, `corroboration.ts`).
+3. **Trust score**: each source gets a 0..100 score combining the clinical domain
+   prior (`domainPrior.ts`: Cochrane/NEJM/CDC/PubMed high, wellness/supplement SEO
+   low), corroboration across independent domains, recency, and an evidence-level
+   signal (`evidence.ts`: systematic reviews rank above RCTs, then observational,
+   then preclinical), then reranks with a one-line reason (`scoreTrust.ts`,
+   `corroboration.ts`).
 4. **Synthesize**: Gemini Flash composes the answer from the trust-ranked
    sources, streamed token by token, every claim carrying a `[n]` citation.
 5. **Verify**: each answer sentence is checked for support from a high-trust
