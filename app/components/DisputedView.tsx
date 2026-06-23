@@ -1,4 +1,5 @@
 import type { GraphClaim } from '@/lib/pipeline/contradictionGraph';
+import { cleanSnippet } from '@/lib/snippet';
 import { trustTier, type TrustTier } from '@/lib/trust';
 import type { ScoredSource } from '@/lib/types';
 
@@ -78,7 +79,7 @@ export function DisputedView({
                       <span className="font-mono text-xs text-muted">
                         {domainOf(claim.sourceUrl)}
                       </span>
-                      <span className="block text-ink">{claim.text}</span>
+                      <span className="block text-ink">{cleanSnippet(claim.text)}</span>
                     </a>
                   </div>
                 );
