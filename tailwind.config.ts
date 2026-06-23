@@ -13,10 +13,12 @@ const config: Config = {
         surface: '#FFFFFF',
         hairline: '#E6E8EB',
         accent: '#0E7490',
+        // Sequential trust ramp (teal to amber to orange), never binary red/green.
+        // Color encodes the trust signal, so it carries the page's color identity.
         trust: {
           high: '#0F766E',
-          mid: '#9AA0A6',
-          low: '#B45309',
+          mid: '#CA8A04',
+          low: '#C2410C',
         },
       },
       fontFamily: {

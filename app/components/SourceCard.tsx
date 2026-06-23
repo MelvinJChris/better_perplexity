@@ -1,6 +1,16 @@
-import { trustTier } from '@/lib/trust';
+import { sourceKind } from '@/lib/pipeline/domainPrior';
+import { trustTier, type TrustTier } from '@/lib/trust';
 import type { ScoredSource } from '@/lib/types';
-import { TrustMeter } from './TrustMeter';
+import { ScoreRing } from './ScoreRing';
+
+// A credibility scorecard, not a neutral search result: the trust score (ring)
+// and the source's kind lead, with cross-source corroboration called out.
+
+const TIER_BORDER: Record<TrustTier, string> = {
+  high: 'border-l-trust-high',
+  mid: 'border-l-trust-mid',
+  low: 'border-l-trust-low',
+};
 
 function domainOf(url: string): string {
   try {
@@ -10,47 +20,38 @@ function domainOf(url: string): string {
   }
 }
 
-function CorroborationBadge({ count }: { count: number }) {
-  return (
-    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-trust-high/10 px-2 py-0.5 text-xs text-trust-high">
-      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden focusable="false">
-        <path
-          d="M6 10a3 3 0 010-4M10 6a3 3 0 010 4M6.5 8h3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </svg>
-      <span className="font-mono">{count}</span> independent {count === 1 ? 'domain' : 'domains'}{' '}
-      agree
-    </span>
-  );
-}
-
 export function SourceCard({ index, source }: { index: number; source: ScoredSource }) {
   const domain = domainOf(source.url);
-  const monogram = (domain[0] ?? '?').toUpperCase();
-  const deemphasized = trustTier(source.trustScore) === 'low';
+  const tier = trustTier(source.trustScore);
 
   return (
     <li
-      className={`animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card ${
-        deemphasized ? 'opacity-70' : ''
-      }`}
+      className={`animate-reveal rounded-card border border-l-4 border-hairline bg-surface p-4 shadow-card ${
+        TIER_BORDER[tier]
+      } ${tier === 'low' ? 'opacity-80' : ''}`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span
-            aria-hidden
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/10 font-mono text-[10px] font-semibold text-accent"
-          >
-            {monogram}
-          </span>
-          <span className="truncate font-mono text-xs text-muted">{domain}</span>
-          <span className="shrink-0 font-mono text-xs text-muted">[{index}]</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden
+              className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded bg-accent/10"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                alt=""
+                width={16}
+                height={16}
+                loading="lazy"
+              />
+            </span>
+            <span className="truncate font-mono text-xs text-muted">{domain}</span>
+            <span className="shrink-0 font-mono text-xs text-muted">[{index}]</span>
+          </div>
+          <p className="mt-1 text-xs font-medium text-ink">{sourceKind(source.url)}</p>
         </div>
-        <TrustMeter score={source.trustScore} />
+        <ScoreRing score={source.trustScore} tier={tier} />
       </div>
 
       <a
@@ -62,12 +63,18 @@ export function SourceCard({ index, source }: { index: number; source: ScoredSou
         <span className="line-clamp-2">{source.title}</span>
       </a>
 
-      <p className="mt-1 text-xs leading-relaxed text-muted">{source.trustReason}</p>
-
-      {source.corroborations > 0 ? <CorroborationBadge count={source.corroborations} /> : null}
+      {source.corroborations > 0 ? (
+        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-trust-high/10 px-2 py-0.5 text-xs text-trust-high">
+          <span aria-hidden>▲</span>
+          <span className="font-mono">{source.corroborations}</span> independent{' '}
+          {source.corroborations === 1 ? 'domain agrees' : 'domains agree'}
+        </p>
+      ) : (
+        <p className="mt-2 text-xs text-muted">Not yet corroborated</p>
+      )}
 
       {source.snippet ? (
-        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{source.snippet}</p>
+        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{source.snippet}</p>
       ) : null}
     </li>
   );
