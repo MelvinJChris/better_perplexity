@@ -7,9 +7,14 @@ import type { Source } from '@/lib/types';
 const src = (url: string): Source => ({ url, title: 't', snippet: 's', rawRelevance: 1 });
 
 const llmOf = (chunks: CompleteChunk[]): LlmProvider => ({
-  complete: async () => {
-    throw new Error('unused');
-  },
+  // verify() calls complete(); return a verdict that supports every sentence.
+  complete: async () => ({
+    text: '{"verdicts":[{"index":0,"supported":true},{"index":1,"supported":true}]}',
+    inputTokens: 0,
+    outputTokens: 0,
+    latencyMs: 0,
+    model: 'm',
+  }),
   async *completeStream() {
     for (const chunk of chunks) yield chunk;
   },
@@ -55,6 +60,12 @@ describe('runSearchEvents', () => {
       .map((e) => e.text)
       .join('');
     expect(answer).toBe('Answer [1]');
+
+    // Verification runs on the finished answer, before the trace.
+    const verification = events.find(
+      (e): e is Extract<SearchEvent, { type: 'verification' }> => e.type === 'verification',
+    );
+    expect(verification?.verified.unsupported).toEqual([]);
 
     const last = events.at(-1);
     expect(last?.type).toBe('trace');
