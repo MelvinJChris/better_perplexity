@@ -1,6 +1,12 @@
-import { trustTier } from '@/lib/trust';
+import { trustTier, type TrustTier } from '@/lib/trust';
 import type { ScoredSource } from '@/lib/types';
 import { TrustMeter } from './TrustMeter';
+
+const TIER_BORDER: Record<TrustTier, string> = {
+  high: 'border-l-trust-high',
+  mid: 'border-l-trust-mid',
+  low: 'border-l-trust-low',
+};
 
 function domainOf(url: string): string {
   try {
@@ -30,22 +36,29 @@ function CorroborationBadge({ count }: { count: number }) {
 
 export function SourceCard({ index, source }: { index: number; source: ScoredSource }) {
   const domain = domainOf(source.url);
-  const monogram = (domain[0] ?? '?').toUpperCase();
-  const deemphasized = trustTier(source.trustScore) === 'low';
+  const tier = trustTier(source.trustScore);
+  const deemphasized = tier === 'low';
 
   return (
     <li
-      className={`animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card ${
-        deemphasized ? 'opacity-70' : ''
-      }`}
+      className={`animate-reveal rounded-card border border-l-4 border-hairline bg-surface p-4 shadow-card ${
+        TIER_BORDER[tier]
+      } ${deemphasized ? 'opacity-75' : ''}`}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/10 font-mono text-[10px] font-semibold text-accent"
+            className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded bg-accent/10"
           >
-            {monogram}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+              alt=""
+              width={16}
+              height={16}
+              loading="lazy"
+            />
           </span>
           <span className="truncate font-mono text-xs text-muted">{domain}</span>
           <span className="shrink-0 font-mono text-xs text-muted">[{index}]</span>
