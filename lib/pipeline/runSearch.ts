@@ -110,22 +110,23 @@ export async function* runSearchEvents(
       if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
     }
 
-    // Verify the finished answer against high-trust sources. A verification
-    // failure must not fail the whole query, so it degrades to no event.
+    // Verify the answer and suggest follow-ups concurrently: they both depend
+    // only on the finished answer and are independent of each other, so awaiting
+    // them in series just added a round-trip (and a free-tier spacing gap). Each
+    // degrades to no event on failure without affecting the other or the query.
     if (answer.trim()) {
-      try {
-        const verified = await verify(answer, scored, deps.llm, { model: deps.synthesisModel });
-        yield { type: 'verification', verified };
-      } catch (err) {
-        console.warn('runSearch: verification skipped', err);
-      }
+      const [verified, followups] = await Promise.allSettled([
+        verify(answer, scored, deps.llm, { model: deps.synthesisModel }),
+        suggestFollowups(query, answer, scored, deps.llm),
+      ]);
 
-      // Suggest follow-ups (additive; failure degrades to no suggestions).
-      try {
-        const followups = await suggestFollowups(query, answer, scored, deps.llm);
-        if (followups.length > 0) yield { type: 'followups', followups };
-      } catch (err) {
-        console.warn('runSearch: follow-ups skipped', err);
+      if (verified.status === 'fulfilled') yield { type: 'verification', verified: verified.value };
+      else console.warn('runSearch: verification skipped', verified.reason);
+
+      if (followups.status === 'fulfilled' && followups.value.length > 0) {
+        yield { type: 'followups', followups: followups.value };
+      } else if (followups.status === 'rejected') {
+        console.warn('runSearch: follow-ups skipped', followups.reason);
       }
     }
 
