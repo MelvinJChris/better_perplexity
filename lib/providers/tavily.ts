@@ -12,6 +12,7 @@ interface TavilyResult {
   content?: string;
   raw_content?: string | null;
   score?: number;
+  published_date?: string;
 }
 
 interface TavilyResponse {
@@ -53,5 +54,6 @@ export async function searchTavily(query: string, config: TavilyConfig): Promise
       snippet: r.content ?? '',
       text: r.raw_content ?? undefined,
       rawRelevance: r.score ?? 0,
+      publishedAt: r.published_date ?? undefined,
     }));
 }

@@ -1,10 +1,40 @@
 import { z } from 'zod';
-import { scoreTrust } from '@/lib/pipeline/scoreTrust';
+import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
+import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
 import { synthesizeStream } from '@/lib/pipeline/synthesize';
 import type { LlmProvider } from '@/lib/providers/llm';
 import type { SearchProvider } from '@/lib/providers/search';
 import { logTrace, type QueryTrace } from '@/lib/trace/trace';
-import type { ScoredSource } from '@/lib/types';
+import type { ScoredSource, Source } from '@/lib/types';
+
+/** Builds the trust signals for a result set: corroboration across independent
+ *  domains (one batched embed) and recency from publish dates. Embedding failure
+ *  degrades to no corroboration rather than failing the query. */
+async function buildTrustSignals(
+  sources: Source[],
+  llm: LlmProvider,
+  now: () => number,
+): Promise<TrustSignals> {
+  const ageDays: Record<string, number> = {};
+  for (const source of sources) {
+    if (!source.publishedAt) continue;
+    const published = Date.parse(source.publishedAt);
+    if (!Number.isNaN(published)) ageDays[source.url] = (now() - published) / 86_400_000;
+  }
+
+  const corroboratingDomains: Record<string, number> = {};
+  try {
+    const embeddings = await llm.embed(sources.map((s) => `${s.title}\n${s.snippet}`));
+    const counts = countCorroboratingDomains(sources, embeddings);
+    sources.forEach((s, i) => {
+      corroboratingDomains[s.url] = counts[i];
+    });
+  } catch (err) {
+    console.warn('runSearch: corroboration embedding skipped', err);
+  }
+
+  return { corroboratingDomains, ageDays };
+}
 
 // The pipeline core, factored out of the route handler so it can be driven with
 // injected providers in tests (no network, no keys). The route just wires the
@@ -44,7 +74,8 @@ export async function* runSearchEvents(
 
   try {
     const sources = await deps.search.search(query);
-    const scored = scoreTrust(sources);
+    const signals = await buildTrustSignals(sources, deps.llm, now);
+    const scored = scoreTrust(sources, signals);
     sourceCount = scored.length;
     yield { type: 'sources', sources: scored };
 

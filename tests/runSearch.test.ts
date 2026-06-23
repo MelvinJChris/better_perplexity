@@ -45,6 +45,9 @@ describe('runSearchEvents', () => {
     if (first.type === 'sources') {
       expect(first.sources).toHaveLength(2);
       expect(first.sources[0]).toHaveProperty('trustScore');
+      // Both stub embeddings agree and sit on different domains, so each is
+      // corroborated by the other's domain (the trust pipeline is wired in).
+      expect(first.sources[0].corroborations).toBe(1);
     }
 
     const answer = events

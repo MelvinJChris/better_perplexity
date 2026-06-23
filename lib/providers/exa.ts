@@ -11,6 +11,7 @@ interface ExaResult {
   url?: string;
   text?: string;
   score?: number;
+  publishedDate?: string;
 }
 
 interface ExaResponse {
@@ -51,5 +52,6 @@ export async function searchExa(query: string, config: ExaConfig): Promise<Sourc
       snippet: (r.text ?? '').slice(0, 300),
       text: r.text ?? undefined,
       rawRelevance: r.score ?? 0,
+      publishedAt: r.publishedDate ?? undefined,
     }));
 }
