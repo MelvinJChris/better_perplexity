@@ -1,6 +1,8 @@
+import type { GraphClaim } from '@/lib/pipeline/contradictionGraph';
 import type { QueryTrace } from '@/lib/trace/trace';
 import type { ScoredSource, VerifiedAnswer } from '@/lib/types';
 import { AnswerBlock } from './AnswerBlock';
+import { DisputedView } from './DisputedView';
 import { SourceList } from './SourceList';
 import { ScopeBanner, VerificationPanel } from './VerificationPanel';
 
@@ -11,6 +13,7 @@ export interface Turn {
   sources: ScoredSource[];
   answer: string;
   verified: VerifiedAnswer | null;
+  contradictions: GraphClaim[][];
   followups: string[];
   trace: QueryTrace | null;
   error: string;
@@ -83,6 +86,10 @@ export function ResultTurn({
               {turn.verified ? <VerificationPanel verified={turn.verified} /> : null}
             </div>
           </section>
+
+          {turn.contradictions.length > 0 ? (
+            <DisputedView groups={turn.contradictions} sources={turn.sources} />
+          ) : null}
 
           {turn.followups.length > 0 ? (
             <section aria-label="Follow-up questions">

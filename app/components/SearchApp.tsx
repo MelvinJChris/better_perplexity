@@ -37,6 +37,7 @@ export function SearchApp() {
         sources: [],
         answer: '',
         verified: null,
+        contradictions: [],
         followups: [],
         trace: null,
         error: '',
@@ -56,6 +57,9 @@ export function SearchApp() {
               break;
             case 'verification':
               patchTurn(id, { verified: event.verified });
+              break;
+            case 'contradictions':
+              patchTurn(id, { contradictions: event.disputed });
               break;
             case 'followups':
               patchTurn(id, { followups: event.followups });
