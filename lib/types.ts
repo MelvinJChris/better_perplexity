@@ -9,6 +9,8 @@ export const sourceSchema = z.object({
   snippet: z.string(),
   text: z.string().optional(),
   rawRelevance: z.number(),
+  /** ISO date the source was published, when the provider reports it (recency). */
+  publishedAt: z.string().optional(),
 });
 export type Source = z.infer<typeof sourceSchema>;
 
@@ -22,6 +24,8 @@ export const claimsSchema = z.array(claimSchema);
 export const scoredSourceSchema = sourceSchema.extend({
   trustScore: z.number().min(0).max(100),
   trustReason: z.string(),
+  /** Number of independent domains that corroborate this source (#12). */
+  corroborations: z.number().int().min(0),
 });
 export type ScoredSource = z.infer<typeof scoredSourceSchema>;
 

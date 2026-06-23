@@ -46,6 +46,15 @@ describe('searchTavily', () => {
     expect(out.map((s) => s.url)).toEqual(['https://x.org/a']);
   });
 
+  it('captures the publish date when present', async () => {
+    const fetchFn: typeof fetch = async () =>
+      jsonResponse({
+        results: [{ url: 'https://x.org/a', published_date: '2024-03-01' }],
+      });
+    const out = await searchTavily('q', { apiKey: 'tk', fetchFn });
+    expect(out[0].publishedAt).toBe('2024-03-01');
+  });
+
   it('throws ProviderError on a non-ok response', async () => {
     const fetchFn: typeof fetch = async () => new Response('nope', { status: 401 });
     await expect(searchTavily('q', { apiKey: 'tk', fetchFn })).rejects.toBeInstanceOf(
@@ -78,5 +87,14 @@ describe('searchExa', () => {
   it('throws ProviderError on a non-ok response', async () => {
     const fetchFn: typeof fetch = async () => new Response('err', { status: 500 });
     await expect(searchExa('q', { apiKey: 'ek', fetchFn })).rejects.toBeInstanceOf(ProviderError);
+  });
+
+  it('captures the publish date when present', async () => {
+    const fetchFn: typeof fetch = async () =>
+      jsonResponse({
+        results: [{ url: 'https://exa.example/a', publishedDate: '2025-01-15' }],
+      });
+    const out = await searchExa('q', { apiKey: 'ek', fetchFn });
+    expect(out[0].publishedAt).toBe('2025-01-15');
   });
 });

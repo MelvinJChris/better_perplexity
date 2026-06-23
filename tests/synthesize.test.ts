@@ -10,6 +10,7 @@ const scored = (url: string, title: string, snippet: string, trustScore: number)
   rawRelevance: 1,
   trustScore,
   trustReason: 'r',
+  corroborations: 0,
 });
 
 const streamingLlm = (chunks: CompleteChunk[]): LlmProvider => ({
