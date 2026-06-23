@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
+import { suggestFollowups } from '@/lib/pipeline/followups';
 import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
-import { synthesizeStream } from '@/lib/pipeline/synthesize';
+import { synthesizeStream, type ThreadContext } from '@/lib/pipeline/synthesize';
 import { verify } from '@/lib/pipeline/verify';
 import type { LlmProvider } from '@/lib/providers/llm';
 import type { SearchProvider } from '@/lib/providers/search';
@@ -43,6 +44,7 @@ async function buildTrustSignals(
 
 export const searchRequestSchema = z.object({
   query: z.string().min(1).max(2000),
+  context: z.object({ question: z.string(), answer: z.string() }).optional(),
 });
 export type SearchRequest = z.infer<typeof searchRequestSchema>;
 
@@ -51,6 +53,7 @@ export type SearchEvent =
   | { type: 'sources'; sources: ScoredSource[] }
   | { type: 'token'; text: string }
   | { type: 'verification'; verified: VerifiedAnswer }
+  | { type: 'followups'; followups: string[] }
   | { type: 'trace'; trace: QueryTrace }
   | { type: 'error'; message: string };
 
@@ -58,6 +61,7 @@ export interface RunSearchDeps {
   search: SearchProvider;
   llm: LlmProvider;
   synthesisModel?: string;
+  context?: ThreadContext;
   now?: () => number;
 }
 
@@ -82,7 +86,13 @@ export async function* runSearchEvents(
     yield { type: 'sources', sources: scored };
 
     let answer = '';
-    for await (const chunk of synthesizeStream(query, scored, deps.llm, deps.synthesisModel)) {
+    for await (const chunk of synthesizeStream(
+      query,
+      scored,
+      deps.llm,
+      deps.synthesisModel,
+      deps.context,
+    )) {
       if (chunk.text) {
         answer += chunk.text;
         yield { type: 'token', text: chunk.text };
@@ -99,6 +109,14 @@ export async function* runSearchEvents(
         yield { type: 'verification', verified };
       } catch (err) {
         console.warn('runSearch: verification skipped', err);
+      }
+
+      // Suggest follow-ups (additive; failure degrades to no suggestions).
+      try {
+        const followups = await suggestFollowups(query, answer, scored, deps.llm);
+        if (followups.length > 0) yield { type: 'followups', followups };
+      } catch (err) {
+        console.warn('runSearch: follow-ups skipped', err);
       }
     }
 

@@ -40,6 +40,20 @@ describe('buildSynthesisPrompt', () => {
     expect(prompt.system.toLowerCase()).toContain('cite every claim');
     expect(prompt.system.toLowerCase()).toContain('never invent');
   });
+
+  it('includes the prior turn as context when given (follow-up)', () => {
+    const withContext = buildSynthesisPrompt(
+      'What about Asia?',
+      [scored('https://iea.org/a', 't', 's', 90)],
+      {
+        question: 'global demand?',
+        answer: 'about 945 TWh',
+      },
+    );
+    expect(withContext.user).toContain('Earlier in this research thread');
+    expect(withContext.user).toContain('global demand?');
+    expect(withContext.user).toContain('Question: What about Asia?');
+  });
 });
 
 describe('synthesize', () => {
