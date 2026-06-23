@@ -18,7 +18,7 @@ import { RateLimitQueue } from '@/lib/providers/rateLimitQueue';
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const DEFAULT_COMPLETE_MODEL = 'gemini-2.5-flash-lite';
 const DEFAULT_SYNTHESIS_MODEL = 'gemini-2.5-flash';
-const DEFAULT_EMBED_MODEL = 'text-embedding-004';
+const DEFAULT_EMBED_MODEL = 'gemini-embedding-001';
 const DEFAULT_RPM = 15;
 
 export interface GeminiConfig {
