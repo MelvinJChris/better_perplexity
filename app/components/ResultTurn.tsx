@@ -20,6 +20,7 @@ export interface Turn {
   contradictions: GraphClaim[][];
   graph: ContradictionGraphData | null;
   followups: string[];
+  answerError: string;
   trace: QueryTrace | null;
   error: string;
 }
@@ -82,6 +83,20 @@ export function ResultTurn({
             <AnswerBlock text={turn.answer} streaming={streaming} />
           ) : streaming ? (
             <p className="text-sm text-muted">Synthesizing a cited answer…</p>
+          ) : turn.answerError ? (
+            <div
+              role="alert"
+              className="rounded-card border border-trust-low/40 bg-trust-low/5 p-3 text-sm text-ink"
+            >
+              <p>{turn.answerError}</p>
+              <button
+                type="button"
+                onClick={() => onRetry(turn.query)}
+                className="mt-2 rounded-card border border-hairline bg-surface px-3 py-1.5 text-sm hover:border-accent"
+              >
+                Try again
+              </button>
+            </div>
           ) : (
             <p className="text-sm text-muted">No answer was produced.</p>
           )}

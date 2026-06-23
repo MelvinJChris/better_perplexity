@@ -86,6 +86,31 @@ describe('runSearchEvents', () => {
     );
     expect(events).toEqual([{ type: 'error', message: 'all providers down' }]);
   });
+
+  it('keeps sources and graph when only synthesis fails (rate limit)', async () => {
+    const llmFailsSynthesis: LlmProvider = {
+      complete: async () => {
+        throw new Error('unused');
+      },
+      // eslint-disable-next-line require-yield
+      async *completeStream() {
+        throw new Error('Gemini 429: rate limited');
+      },
+      embed: async (texts) => texts.map(() => [1, 0]),
+    };
+    const events = await collect(
+      runSearchEvents('q', {
+        search: searchOf([src('https://cochranelibrary.com/a'), src('https://nih.gov/b')]),
+        llm: llmFailsSynthesis,
+      }),
+    );
+    const types = events.map((e) => e.type);
+    expect(types).toContain('sources'); // trust layer survived
+    expect(types).toContain('contradictions'); // graph survived
+    expect(types).toContain('answer_error'); // answer degraded, not fatal
+    expect(types).toContain('trace'); // query still completes
+    expect(types).not.toContain('error'); // not a terminal failure
+  });
 });
 
 describe('ndjsonStream', () => {
