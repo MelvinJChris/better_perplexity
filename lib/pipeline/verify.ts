@@ -18,13 +18,25 @@ const verdictSchema = z.object({
   scopeNote: z.string().optional(),
 });
 
-/** Splits prose into sentences. Robust enough for answer text; trims empties. */
+// Period that has been protected from sentence splitting (an abbreviation dot).
+const PROTECTED_DOT = '∯';
+// Multi-letter abbreviations whose trailing period should not end a sentence.
+const ABBREVIATIONS = /\b(?:etc|vs|approx|no|fig|al|Dr|Mr|Mrs|Ms|Prof|Inc|Ltd|Jr|Sr|St)\./gi;
+
+/** Splits prose into sentences. Periods inside acronyms (U.S., e.g.) and common
+ *  abbreviations are protected so they do not create fragments, while a lone
+ *  single-letter period at a clause end (e.g. "vitamin D.") still splits. */
 export function splitSentences(text: string): string[] {
-  return text
+  const guarded = text
     .replace(/\s+/g, ' ')
     .trim()
+    // Acronyms: two or more letter-period pairs (U.S., U.K., e.g., i.e., a.k.a.).
+    .replace(/\b(?:[A-Za-z]\.){2,}/g, (m) => m.replace(/\./g, PROTECTED_DOT))
+    .replace(ABBREVIATIONS, (m) => m.replace(/\./g, PROTECTED_DOT));
+
+  return guarded
     .split(/(?<=[.!?])\s+(?=[A-Z0-9"'(])/)
-    .map((s) => s.trim())
+    .map((s) => s.replace(/∯/g, '.').trim())
     .filter(Boolean);
 }
 

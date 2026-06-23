@@ -31,6 +31,19 @@ describe('splitSentences', () => {
       'Sources vary.',
     ]);
   });
+
+  it('does not split inside acronyms or common abbreviations', () => {
+    expect(
+      splitSentences('The U.S. and China lead, e.g. in capacity. The trend continues.'),
+    ).toEqual(['The U.S. and China lead, e.g. in capacity.', 'The trend continues.']);
+  });
+
+  it('still ends a sentence on a lone single-letter period (vitamin D.)', () => {
+    expect(splitSentences('Take vitamin D. The study shows benefit.')).toEqual([
+      'Take vitamin D.',
+      'The study shows benefit.',
+    ]);
+  });
 });
 
 describe('extractCitations', () => {
