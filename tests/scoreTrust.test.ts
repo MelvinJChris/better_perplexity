@@ -11,14 +11,14 @@ const src = (url: string): Source => ({
 
 describe('scoreTrust', () => {
   const scored = scoreTrust([
-    src('https://some-content-farm.example/post'),
-    src('https://www.iea.org/reports/electricity-2024'),
-    src('https://eia.gov/electricity'),
+    src('https://www.mercola.com/supplement-post'),
+    src('https://www.cochranelibrary.com/cdsr/review'),
+    src('https://cdc.gov/topic'),
   ]);
 
   it('reranks high-credibility sources above weak ones', () => {
     expect(scored[0].trustScore).toBeGreaterThan(scored[scored.length - 1].trustScore);
-    expect(scored[scored.length - 1].url).toContain('content-farm');
+    expect(scored[scored.length - 1].url).toContain('mercola');
   });
 
   it('attaches a score in range, a reason, and a corroboration count to every source', () => {
@@ -49,13 +49,13 @@ describe('scoreTrust', () => {
     expect(stale.trustReason).toContain('older source');
   });
 
-  it('ranks the corroborated high-trust cluster above an uncorroborated outlier (lead query)', () => {
+  it('ranks the corroborated high-trust cluster above an uncorroborated outlier', () => {
     const cluster = [
-      'https://www.iea.org/data-centres',
-      'https://eia.gov/data-centres',
-      'https://reuters.com/data-centres',
+      'https://www.cochranelibrary.com/review',
+      'https://nejm.org/article',
+      'https://cdc.gov/topic',
     ];
-    const outlier = 'https://random-blog.example/data-centres';
+    const outlier = 'https://supplement-blog.example/claim';
     const corroboratingDomains = {
       [cluster[0]]: 2,
       [cluster[1]]: 2,
