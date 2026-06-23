@@ -5,15 +5,16 @@ import {
   type GraphClaim,
 } from '@/lib/pipeline/contradictionGraph';
 
-const claim = (id: string, value: number | null): GraphClaim => ({
+const claim = (id: string, value: number | null, unit = 'TWh'): GraphClaim => ({
   id,
   sourceUrl: `https://${id}.example`,
   text: `claim ${id}`,
   value,
+  unit: value === null ? undefined : unit,
 });
 
 describe('buildContradictionGraph', () => {
-  it('links same-entity claims and marks diverging numbers as disagreement', () => {
+  it('links same-entity claims and marks diverging same-unit numbers as disagreement', () => {
     const claims = [claim('a', 945), claim('b', 960), claim('c', 600)];
     // a, b, c are all about the same entity (high similarity).
     const embeddings = [
@@ -36,6 +37,17 @@ describe('buildContradictionGraph', () => {
       [0, 1],
     ];
     expect(buildContradictionGraph(claims, embeddings).edges).toHaveLength(0);
+  });
+
+  it('never disagrees across different units (#46)', () => {
+    // Linked by embedding, but a TWh figure and a percentage are not comparable.
+    const claims = [claim('a', 945, 'TWh'), claim('b', 17, '%')];
+    const embeddings = [
+      [1, 0],
+      [1, 0],
+    ];
+    const graph = buildContradictionGraph(claims, embeddings);
+    expect(graph.edges[0].relation).toBe('agree');
   });
 });
 

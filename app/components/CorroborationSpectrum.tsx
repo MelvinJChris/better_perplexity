@@ -1,11 +1,12 @@
-import { extractMetricValue } from '@/lib/metrics';
+import { extractMetric, dominantUnit } from '@/lib/metrics';
 import { trustTier, type TrustTier } from '@/lib/trust';
 import type { ScoredSource } from '@/lib/types';
 
 // The signature element: plot each source's comparable number on one axis so the
 // agreeing cluster clumps and outliers sit apart (the US-vs-global scope trap is
-// visible spatially). Degrades to nothing when fewer than two sources expose a
-// comparable number.
+// visible spatially). Only values sharing the dominant unit are plotted (#46), so
+// a percentage or a count never lands on a TWh axis. Degrades to nothing when
+// fewer than two sources share a comparable unit.
 
 const DOT: Record<TrustTier, string> = {
   high: 'bg-trust-high',
@@ -20,13 +21,20 @@ function formatValue(value: number): string {
 }
 
 export function CorroborationSpectrum({ sources }: { sources: ScoredSource[] }) {
+  const unit = dominantUnit(sources.map((s) => `${s.title} ${s.snippet}`));
+  if (!unit) return null;
+
   const points = sources
     .map((source, i) => ({
       source,
       index: i + 1,
-      value: extractMetricValue(`${source.title} ${source.snippet}`),
+      metric: extractMetric(`${source.title} ${source.snippet}`),
     }))
-    .filter((p): p is { source: ScoredSource; index: number; value: number } => p.value !== null);
+    .filter(
+      (p): p is { source: ScoredSource; index: number; metric: { value: number; unit: string } } =>
+        p.metric !== null && p.metric.unit === unit,
+    )
+    .map((p) => ({ source: p.source, index: p.index, value: p.metric.value }));
 
   if (points.length < 2) return null;
 
@@ -38,10 +46,10 @@ export function CorroborationSpectrum({ sources }: { sources: ScoredSource[] }) 
   return (
     <figure className="animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card">
       <figcaption className="font-mono text-xs uppercase tracking-widest text-muted">
-        Corroboration spectrum
+        Corroboration spectrum ({unit})
       </figcaption>
       <p className="mt-1 text-xs text-muted">
-        Comparable values across sources. Agreement clusters; outliers sit apart.
+        Comparable {unit} values across sources. Agreement clusters; outliers sit apart.
       </p>
 
       <div className="relative mb-6 mt-6 h-px bg-hairline">
