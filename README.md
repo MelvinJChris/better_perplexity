@@ -96,7 +96,7 @@ From `pnpm eval` over a 15-query hand-labeled set (offline, deterministic):
 | Metric               | Value                 | How                                                      |
 | -------------------- | --------------------- | -------------------------------------------------------- |
 | Trust-rank quality   | 1.00 mean precision@k | expected high-trust domains rank top, 15 labeled queries |
-| Contradiction recall | 1.00 (3/3)            | labeled outliers (incl. the scope trap) flagged          |
+| Contradiction recall | 1.00 (4/4)            | labeled supplement/marketing outliers flagged            |
 | Cost per query       | $0.00 free tier       | from real token + search counts; ~$0.017 at paid rates   |
 | Faithfulness         | live-only             | every answer sentence verified on a keyed run            |
 | Latency p50/p95      | live-only             | measured end to end on a keyed run                       |
