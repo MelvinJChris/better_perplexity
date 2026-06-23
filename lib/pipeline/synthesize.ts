@@ -20,6 +20,8 @@ export interface ThreadContext {
 
 const SYSTEM_INSTRUCTION = [
   'You are a research assistant. Answer the question using ONLY the numbered sources provided.',
+  'Lead with a one-sentence direct answer (the bottom line), then concise supporting detail.',
+  'Be concise: short paragraphs, no padding, and prefer prose over long bulleted lists.',
   'Cite every claim with its source number in square brackets, like [1] or [2][3].',
   'Prefer higher-trust sources. If the sources disagree, say so and attribute each side.',
   'If the sources do not support an answer, say so plainly. Never invent facts or sources.',

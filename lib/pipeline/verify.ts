@@ -54,7 +54,9 @@ async function judgeSentences(
   const maxAttempts = opts?.maxAttempts ?? 2;
   const system =
     'You verify whether each numbered answer sentence is supported by the provided sources. ' +
-    'A sentence is supported only if a source substantively backs its claim. ' +
+    `Every source the answer cites is in the list below, numbered the same way. ` +
+    `A sentence is supported only if a HIGH-trust source (trust ${HIGH_TRUST} or above) ` +
+    'substantively backs its claim. ' +
     'Also detect scope mismatches (for example a US figure used to answer a global question). ' +
     'Return STRICT JSON: {"verdicts":[{"index":0,"supported":true}],"scopeNote":"optional"}.';
   const sourceList = sources
@@ -97,11 +99,10 @@ export async function verify(
     return { text: answer, citations, unsupported: [] };
   }
 
-  // Prefer high-trust sources for the support bar; fall back to all if none.
-  const highTrust = sources.filter((s) => s.trustScore >= HIGH_TRUST);
-  const judgeAgainst = highTrust.length > 0 ? highTrust : sources;
-
-  const { supported, scopeNote } = await judgeSentences(sentences, judgeAgainst, llm, opts);
+  // Judge against the FULL source list with the same numbering the answer used,
+  // so citation indices line up; the model uses the per-source trust scores to
+  // decide whether a high-trust source backs each sentence (#67).
+  const { supported, scopeNote } = await judgeSentences(sentences, sources, llm, opts);
   // A sentence with no explicit "supported" verdict is treated as unsupported.
   const unsupported = sentences.filter((_, i) => !supported.has(i));
 
