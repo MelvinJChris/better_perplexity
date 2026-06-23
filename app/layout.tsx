@@ -18,7 +18,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'better_perplexity — clinical evidence, audited',
+  title: 'better_perplexity: clinical evidence, audited',
   description:
     'A clinical research assistant that scores every source on the evidence hierarchy, surfaces where studies agree and disagree, and cites every claim.',
 };

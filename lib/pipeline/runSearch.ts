@@ -5,6 +5,7 @@ import {
   type GraphClaim,
 } from '@/lib/pipeline/contradictionGraph';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
+import { hostOf } from '@/lib/pipeline/domainPrior';
 import { detectEvidenceLevel, type EvidenceLevel } from '@/lib/pipeline/evidence';
 import { suggestFollowups } from '@/lib/pipeline/followups';
 import { extractMetric } from '@/lib/metrics';
@@ -61,12 +62,25 @@ export const searchRequestSchema = z.object({
 });
 export type SearchRequest = z.infer<typeof searchRequestSchema>;
 
+/** A source as a node in the knowledge graph, labeled by its [n] on the cards. */
+export interface GraphNode {
+  id: string;
+  index: number;
+  domain: string;
+  trustScore: number;
+}
+
+export interface ContradictionGraphData {
+  nodes: GraphNode[];
+  edges: { a: string; b: string; relation: 'agree' | 'disagree' }[];
+}
+
 /** Events streamed to the client, one JSON object per line (NDJSON). */
 export type SearchEvent =
   | { type: 'sources'; sources: ScoredSource[] }
   | { type: 'token'; text: string }
   | { type: 'verification'; verified: VerifiedAnswer }
-  | { type: 'contradictions'; disputed: GraphClaim[][] }
+  | { type: 'contradictions'; disputed: GraphClaim[][]; graph: ContradictionGraphData }
   | { type: 'followups'; followups: string[] }
   | { type: 'trace'; trace: QueryTrace }
   | { type: 'error'; message: string };
@@ -136,8 +150,10 @@ export async function* runSearchEvents(
     }
 
     // (Stretch) Contradiction graph over the sources, reusing the corroboration
-    // embeddings so it costs nothing extra. Emits only when a dispute is found.
-    const graphClaims: GraphClaim[] = sources.map((s, i) => {
+    // embeddings so it costs nothing extra. Built in scored (display) order so
+    // node ids line up with the source-card [n]. Emitted whenever sources relate.
+    const embByUrl = new Map(sources.map((s, i) => [s.url, embeddings[i] ?? []]));
+    const graphClaims: GraphClaim[] = scored.map((s, i) => {
       const metric = extractMetric(`${s.title} ${s.snippet}`);
       return {
         id: String(i),
@@ -147,8 +163,20 @@ export async function* runSearchEvents(
         unit: metric?.unit,
       };
     });
-    const disputed = summarizeContradictions(buildContradictionGraph(graphClaims, embeddings));
-    if (disputed.length > 0) yield { type: 'contradictions', disputed };
+    const graph = buildContradictionGraph(
+      graphClaims,
+      scored.map((s) => embByUrl.get(s.url) ?? []),
+    );
+    const disputed = summarizeContradictions(graph);
+    if (graph.edges.length > 0) {
+      const nodes: GraphNode[] = scored.map((s, i) => ({
+        id: String(i),
+        index: i + 1,
+        domain: hostOf(s.url),
+        trustScore: s.trustScore,
+      }));
+      yield { type: 'contradictions', disputed, graph: { nodes, edges: graph.edges } };
+    }
 
     const trace: QueryTrace = {
       query,

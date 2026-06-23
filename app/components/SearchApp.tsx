@@ -38,6 +38,7 @@ export function SearchApp() {
         answer: '',
         verified: null,
         contradictions: [],
+        graph: null,
         followups: [],
         trace: null,
         error: '',
@@ -59,7 +60,7 @@ export function SearchApp() {
               patchTurn(id, { verified: event.verified });
               break;
             case 'contradictions':
-              patchTurn(id, { contradictions: event.disputed });
+              patchTurn(id, { contradictions: event.disputed, graph: event.graph });
               break;
             case 'followups':
               patchTurn(id, { followups: event.followups });
