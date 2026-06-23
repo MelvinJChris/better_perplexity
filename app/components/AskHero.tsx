@@ -2,13 +2,13 @@
 
 import { QueryForm } from './QueryForm';
 
-// The locked demo set (see eval/DEMO_QUERIES.md): each shows a different facet
-// of the trust layer — corroboration + scope trap, junk downranking, and a
-// reputable-source contradiction.
+// The locked clinical demo set (see eval/DEMO_QUERIES.md): each shows the trust
+// layer at its best, the evidence hierarchy downranking supplement/SEO pages,
+// and genuine disagreement across reputable studies.
 const EXAMPLES = [
-  'global data center electricity demand 2030 forecast TWh',
+  'Does vitamin D reduce the risk of respiratory infections?',
   'Does vitamin C prevent the common cold?',
-  'How many trees are there on Earth?',
+  'Is intermittent fasting effective for type 2 diabetes?',
 ];
 
 export function AskHero({ onSubmit }: { onSubmit: (query: string) => void }) {
@@ -16,11 +16,12 @@ export function AskHero({ onSubmit }: { onSubmit: (query: string) => void }) {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
       <p className="font-mono text-xs uppercase tracking-widest text-accent">better_perplexity</p>
       <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-        Research answers you can audit.
+        Clinical answers you can trust.
       </h1>
       <p className="mt-4 text-base leading-relaxed text-muted">
-        Ask a research question. Every source is scored for credibility, cross-source agreement is
-        made explicit, and every claim in the answer is cited.
+        Ask a clinical question. Every source is scored on the evidence hierarchy, from systematic
+        reviews down to wellness blogs, cross-study agreement is made explicit, and every claim in
+        the answer is cited.
       </p>
 
       <div className="mt-8">
@@ -35,7 +36,7 @@ export function AskHero({ onSubmit }: { onSubmit: (query: string) => void }) {
               <button
                 type="button"
                 onClick={() => onSubmit(example)}
-                className="w-full rounded-card border border-hairline bg-surface px-4 py-3 text-left text-sm text-ink shadow-card transition-colors hover:border-accent"
+                className="w-full rounded-card border border-hairline bg-surface px-4 py-3 text-left text-sm text-ink shadow-card transition-colors hover:border-accent hover:text-accent"
               >
                 {example}
               </button>
