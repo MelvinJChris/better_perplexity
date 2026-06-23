@@ -26,6 +26,8 @@ export const scoredSourceSchema = sourceSchema.extend({
   trustReason: z.string(),
   /** Number of independent domains that corroborate this source (#12). */
   corroborations: z.number().int().min(0),
+  /** Evidence-level label when detected from the source text (#54). */
+  evidence: z.string().optional(),
 });
 export type ScoredSource = z.infer<typeof scoredSourceSchema>;
 

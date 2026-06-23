@@ -5,6 +5,7 @@ import {
   type GraphClaim,
 } from '@/lib/pipeline/contradictionGraph';
 import { countCorroboratingDomains } from '@/lib/pipeline/corroboration';
+import { detectEvidenceLevel, type EvidenceLevel } from '@/lib/pipeline/evidence';
 import { suggestFollowups } from '@/lib/pipeline/followups';
 import { extractMetric } from '@/lib/metrics';
 import { scoreTrust, type TrustSignals } from '@/lib/pipeline/scoreTrust';
@@ -25,10 +26,14 @@ async function buildTrustSignals(
   now: () => number,
 ): Promise<{ signals: TrustSignals; embeddings: number[][] }> {
   const ageDays: Record<string, number> = {};
+  const evidenceLevels: Record<string, EvidenceLevel> = {};
   for (const source of sources) {
-    if (!source.publishedAt) continue;
-    const published = Date.parse(source.publishedAt);
-    if (!Number.isNaN(published)) ageDays[source.url] = (now() - published) / 86_400_000;
+    if (source.publishedAt) {
+      const published = Date.parse(source.publishedAt);
+      if (!Number.isNaN(published)) ageDays[source.url] = (now() - published) / 86_400_000;
+    }
+    const level = detectEvidenceLevel(`${source.title} ${source.snippet} ${source.text ?? ''}`);
+    if (level) evidenceLevels[source.url] = level;
   }
 
   const corroboratingDomains: Record<string, number> = {};
@@ -43,7 +48,7 @@ async function buildTrustSignals(
     console.warn('runSearch: corroboration embedding skipped', err);
   }
 
-  return { signals: { corroboratingDomains, ageDays }, embeddings };
+  return { signals: { corroboratingDomains, ageDays, evidenceLevels }, embeddings };
 }
 
 // The pipeline core, factored out of the route handler so it can be driven with

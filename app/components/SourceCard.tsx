@@ -49,7 +49,14 @@ export function SourceCard({ index, source }: { index: number; source: ScoredSou
             <span className="truncate font-mono text-xs text-muted">{domain}</span>
             <span className="shrink-0 font-mono text-xs text-muted">[{index}]</span>
           </div>
-          <p className="mt-1 text-xs font-medium text-ink">{sourceKind(source.url)}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-medium text-ink">{sourceKind(source.url)}</span>
+            {source.evidence ? (
+              <span className="rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-mono text-[10px] text-accent">
+                {source.evidence}
+              </span>
+            ) : null}
+          </div>
         </div>
         <ScoreRing score={source.trustScore} tier={tier} />
       </div>
