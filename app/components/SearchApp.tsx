@@ -40,6 +40,7 @@ export function SearchApp() {
         contradictions: [],
         graph: null,
         followups: [],
+        answerError: '',
         trace: null,
         error: '',
       };
@@ -64,6 +65,9 @@ export function SearchApp() {
               break;
             case 'followups':
               patchTurn(id, { followups: event.followups });
+              break;
+            case 'answer_error':
+              patchTurn(id, { answerError: event.message });
               break;
             case 'trace':
               patchTurn(id, { trace: event.trace, status: 'done' });

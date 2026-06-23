@@ -82,6 +82,7 @@ export type SearchEvent =
   | { type: 'verification'; verified: VerifiedAnswer }
   | { type: 'contradictions'; disputed: GraphClaim[][]; graph: ContradictionGraphData }
   | { type: 'followups'; followups: string[] }
+  | { type: 'answer_error'; message: string }
   | { type: 'trace'; trace: QueryTrace }
   | { type: 'error'; message: string };
 
@@ -94,8 +95,10 @@ export interface RunSearchDeps {
 }
 
 /** Retrieve, trust-rank, then stream a cited synthesized answer, ending with a
- *  trace. Errors become a terminal `error` event rather than throwing, so the
- *  stream always closes cleanly. Stateless and safe to retry. */
+ *  trace. Retrieval/scoring failure is terminal (nothing to show without
+ *  sources); a synthesis failure is non-fatal, so the sources, trust layer, and
+ *  knowledge graph still render with an answer_error notice. Stateless and safe
+ *  to retry. */
 export async function* runSearchEvents(
   query: string,
   deps: RunSearchDeps,
@@ -104,16 +107,58 @@ export async function* runSearchEvents(
   const startedAt = now();
   let inputTokens = 0;
   let outputTokens = 0;
-  let sourceCount = 0;
 
+  // Retrieval + scoring: terminal on failure (there is nothing to show).
+  let sources: Source[];
+  let embeddings: number[][];
+  let scored: ScoredSource[];
   try {
-    const sources = await deps.search.search(query);
-    const { signals, embeddings } = await buildTrustSignals(sources, deps.llm, now);
-    const scored = scoreTrust(sources, signals);
-    sourceCount = scored.length;
-    yield { type: 'sources', sources: scored };
+    sources = await deps.search.search(query);
+    const built = await buildTrustSignals(sources, deps.llm, now);
+    embeddings = built.embeddings;
+    scored = scoreTrust(sources, built.signals);
+  } catch (err) {
+    yield { type: 'error', message: err instanceof Error ? err.message : 'Search failed' };
+    return;
+  }
+  yield { type: 'sources', sources: scored };
 
-    let answer = '';
+  // Knowledge graph depends only on the sources and their embeddings, so emit it
+  // before synthesis and independent of whether the answer succeeds. Built in
+  // scored (display) order so node ids line up with the source-card [n].
+  const embByUrl = new Map(sources.map((s, i) => [s.url, embeddings[i] ?? []]));
+  const graphClaims: GraphClaim[] = scored.map((s, i) => {
+    const metric = extractMetric(`${s.title} ${s.snippet}`);
+    return {
+      id: String(i),
+      sourceUrl: s.url,
+      text: s.snippet,
+      value: metric?.value ?? null,
+      unit: metric?.unit,
+    };
+  });
+  const graph = buildContradictionGraph(
+    graphClaims,
+    scored.map((s) => embByUrl.get(s.url) ?? []),
+  );
+  if (graph.edges.length > 0) {
+    const nodes: GraphNode[] = scored.map((s, i) => ({
+      id: String(i),
+      index: i + 1,
+      domain: hostOf(s.url),
+      trustScore: s.trustScore,
+    }));
+    yield {
+      type: 'contradictions',
+      disputed: summarizeContradictions(graph),
+      graph: { nodes, edges: graph.edges },
+    };
+  }
+
+  // Synthesis is non-fatal: a failure (e.g. rate limit) must not discard the
+  // sources and graph already produced, so it degrades to an answer_error notice.
+  let answer = '';
+  try {
     for await (const chunk of synthesizeStream(
       query,
       scored,
@@ -128,69 +173,43 @@ export async function* runSearchEvents(
       if (chunk.inputTokens !== undefined) inputTokens = chunk.inputTokens;
       if (chunk.outputTokens !== undefined) outputTokens = chunk.outputTokens;
     }
-
-    // Verify the answer and suggest follow-ups concurrently: they both depend
-    // only on the finished answer and are independent of each other, so awaiting
-    // them in series just added a round-trip (and a free-tier spacing gap). Each
-    // degrades to no event on failure without affecting the other or the query.
-    if (answer.trim()) {
-      const [verified, followups] = await Promise.allSettled([
-        verify(answer, scored, deps.llm, { model: deps.synthesisModel }),
-        suggestFollowups(query, answer, scored, deps.llm),
-      ]);
-
-      if (verified.status === 'fulfilled') yield { type: 'verification', verified: verified.value };
-      else console.warn('runSearch: verification skipped', verified.reason);
-
-      if (followups.status === 'fulfilled' && followups.value.length > 0) {
-        yield { type: 'followups', followups: followups.value };
-      } else if (followups.status === 'rejected') {
-        console.warn('runSearch: follow-ups skipped', followups.reason);
-      }
-    }
-
-    // (Stretch) Contradiction graph over the sources, reusing the corroboration
-    // embeddings so it costs nothing extra. Built in scored (display) order so
-    // node ids line up with the source-card [n]. Emitted whenever sources relate.
-    const embByUrl = new Map(sources.map((s, i) => [s.url, embeddings[i] ?? []]));
-    const graphClaims: GraphClaim[] = scored.map((s, i) => {
-      const metric = extractMetric(`${s.title} ${s.snippet}`);
-      return {
-        id: String(i),
-        sourceUrl: s.url,
-        text: s.snippet,
-        value: metric?.value ?? null,
-        unit: metric?.unit,
-      };
-    });
-    const graph = buildContradictionGraph(
-      graphClaims,
-      scored.map((s) => embByUrl.get(s.url) ?? []),
-    );
-    const disputed = summarizeContradictions(graph);
-    if (graph.edges.length > 0) {
-      const nodes: GraphNode[] = scored.map((s, i) => ({
-        id: String(i),
-        index: i + 1,
-        domain: hostOf(s.url),
-        trustScore: s.trustScore,
-      }));
-      yield { type: 'contradictions', disputed, graph: { nodes, edges: graph.edges } };
-    }
-
-    const trace: QueryTrace = {
-      query,
-      sourceCount,
-      synthesisModel: deps.synthesisModel ?? 'default',
-      inputTokens,
-      outputTokens,
-      latencyMs: now() - startedAt,
-    };
-    logTrace(trace);
-    yield { type: 'trace', trace };
   } catch (err) {
-    yield { type: 'error', message: err instanceof Error ? err.message : 'Search failed' };
+    console.warn('runSearch: synthesis failed', err);
   }
+
+  if (answer.trim()) {
+    // Verify and suggest follow-ups concurrently: both depend only on the
+    // finished answer and are independent, so each degrades on its own.
+    const [verified, followups] = await Promise.allSettled([
+      verify(answer, scored, deps.llm, { model: deps.synthesisModel }),
+      suggestFollowups(query, answer, scored, deps.llm),
+    ]);
+
+    if (verified.status === 'fulfilled') yield { type: 'verification', verified: verified.value };
+    else console.warn('runSearch: verification skipped', verified.reason);
+
+    if (followups.status === 'fulfilled' && followups.value.length > 0) {
+      yield { type: 'followups', followups: followups.value };
+    } else if (followups.status === 'rejected') {
+      console.warn('runSearch: follow-ups skipped', followups.reason);
+    }
+  } else {
+    yield {
+      type: 'answer_error',
+      message: 'The answer could not be generated (the model may be rate-limited). Try again.',
+    };
+  }
+
+  const trace: QueryTrace = {
+    query,
+    sourceCount: scored.length,
+    synthesisModel: deps.synthesisModel ?? 'default',
+    inputTokens,
+    outputTokens,
+    latencyMs: now() - startedAt,
+  };
+  logTrace(trace);
+  yield { type: 'trace', trace };
 }
 
 /** Serializes a SearchEvent stream as NDJSON for the HTTP response body. */
