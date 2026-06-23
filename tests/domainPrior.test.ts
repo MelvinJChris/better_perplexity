@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { domainPrior, hostOf } from '@/lib/pipeline/domainPrior';
+import { domainPrior, hostOf, sourceKind } from '@/lib/pipeline/domainPrior';
 
 describe('hostOf', () => {
   it('strips www and lowercases', () => {
@@ -29,5 +29,16 @@ describe('domainPrior', () => {
 
   it('falls back to a neutral prior for an unknown unparseable url', () => {
     expect(domainPrior('garbage')).toBe(30);
+  });
+});
+
+describe('sourceKind', () => {
+  it('labels curated and TLD-based source kinds', () => {
+    expect(sourceKind('https://www.iea.org/x')).toBe('Intergovernmental agency');
+    expect(sourceKind('https://www.nature.com/y')).toBe('Peer-reviewed journal');
+    expect(sourceKind('https://eia.gov/z')).toBe('Government agency');
+    expect(sourceKind('https://mit.edu/x')).toBe('Academic');
+    expect(sourceKind('https://some-charity.org/x')).toBe('Organization');
+    expect(sourceKind('https://random-blog.example/x')).toBe('Web source');
   });
 });

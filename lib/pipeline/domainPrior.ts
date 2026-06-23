@@ -28,6 +28,37 @@ export function hostOf(url: string): string {
   }
 }
 
+const CURATED_KIND: Record<string, string> = {
+  'iea.org': 'Intergovernmental agency',
+  'irena.org': 'Intergovernmental agency',
+  'nature.com': 'Peer-reviewed journal',
+  'science.org': 'Peer-reviewed journal',
+  'eia.gov': 'Government agency',
+  'nrel.gov': 'Government lab',
+  'reuters.com': 'News wire',
+  'apnews.com': 'News wire',
+  'ft.com': 'News',
+  'economist.com': 'News',
+  'mckinsey.com': 'Consultancy',
+  'wikipedia.org': 'Encyclopedia',
+  'medium.com': 'Blog platform',
+};
+
+/** A short, human credibility category for a source (shown on its scorecard). */
+export function sourceKind(url: string): string {
+  const host = hostOf(url);
+  if (!host) return 'Web source';
+
+  for (const [domain, kind] of Object.entries(CURATED_KIND)) {
+    if (host === domain || host.endsWith(`.${domain}`)) return kind;
+  }
+  if (host.endsWith('.gov') || host.endsWith('.gov.uk')) return 'Government';
+  if (host.endsWith('.int')) return 'Intergovernmental';
+  if (host.endsWith('.edu') || host.endsWith('.ac.uk')) return 'Academic';
+  if (host.endsWith('.org')) return 'Organization';
+  return 'Web source';
+}
+
 /** Credibility prior in the range 0 to 100. */
 export function domainPrior(url: string): number {
   const host = hostOf(url);

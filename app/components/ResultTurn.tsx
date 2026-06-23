@@ -5,7 +5,7 @@ import { AnswerBlock } from './AnswerBlock';
 import { CorroborationSpectrum } from './CorroborationSpectrum';
 import { DisputedView } from './DisputedView';
 import { SourceList } from './SourceList';
-import { TrustSummary } from './TrustSummary';
+import { Verdict } from './Verdict';
 import { ScopeBanner, VerificationPanel } from './VerificationPanel';
 
 export interface Turn {
@@ -71,9 +71,7 @@ export function ResultTurn({
         aria-label="Answer"
         className="mt-4 rounded-card border border-hairline bg-surface p-5 shadow-card"
       >
-        <div className="border-l-2 border-accent pl-3">
-          <TrustSummary sources={turn.sources} verified={turn.verified} streaming={streaming} />
-        </div>
+        <Verdict sources={turn.sources} verified={turn.verified} streaming={streaming} />
 
         <div className="mt-4 space-y-3">
           {turn.verified?.scopeMismatch ? <ScopeBanner note={turn.verified.scopeMismatch} /> : null}
