@@ -1,7 +1,9 @@
 import type { GraphClaim } from '@/lib/pipeline/contradictionGraph';
+import type { ContradictionGraphData } from '@/lib/pipeline/runSearch';
 import type { QueryTrace } from '@/lib/trace/trace';
 import type { ScoredSource, VerifiedAnswer } from '@/lib/types';
 import { AnswerBlock } from './AnswerBlock';
+import { ContradictionGraphView } from './ContradictionGraphView';
 import { CorroborationSpectrum } from './CorroborationSpectrum';
 import { DisputedView } from './DisputedView';
 import { SourceList } from './SourceList';
@@ -16,6 +18,7 @@ export interface Turn {
   answer: string;
   verified: VerifiedAnswer | null;
   contradictions: GraphClaim[][];
+  graph: ContradictionGraphData | null;
   followups: string[];
   trace: QueryTrace | null;
   error: string;
@@ -122,6 +125,12 @@ export function ResultTurn({
           )}
         </div>
       </section>
+
+      {turn.graph ? (
+        <div className="mt-6">
+          <ContradictionGraphView graph={turn.graph} />
+        </div>
+      ) : null}
 
       {turn.contradictions.length > 0 ? (
         <div className="mt-6">
