@@ -74,6 +74,10 @@ export function CorroborationSpectrum({ sources }: { sources: ScoredSource[] }) 
     );
   }
 
+  // Nothing to show when every value collapses into a single cluster: there is
+  // no consensus-vs-outlier spread to plot (#68).
+  if (clusters.length < 2) return null;
+
   return (
     <figure className="animate-reveal rounded-card border border-hairline bg-surface p-4 shadow-card">
       <figcaption className="font-mono text-xs uppercase tracking-widest text-muted">
