@@ -1,357 +1,346 @@
 [
   {
-    "id": "datacenter-twh-2030",
-    "query": "global data center electricity demand 2030 forecast TWh",
-    "expectedTopDomains": ["iea.org", "eia.gov"],
+    "id": "vitamin-d-respiratory",
+    "query": "Does vitamin D supplementation reduce the risk of respiratory infections?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
     "contradiction": {
-      "description": "US-only figure presented against a global question (scope trap).",
-      "outlierUrl": "https://datacenterblog.example/us-projection"
+      "description": "A supplement page claims a far larger effect than the meta-analyses.",
+      "outlierUrl": "https://www.mercola.com/vitamin-d-infections"
     },
     "sources": [
       {
-        "url": "https://www.iea.org/reports/electricity-2024",
-        "title": "Electricity 2024: data centre demand",
-        "snippet": "Global data centre electricity demand could reach about 945 TWh by 2030, roughly doubling from 2022 levels.",
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-d-ari",
+        "title": "Vitamin D for preventing acute respiratory infections: a systematic review and meta-analysis",
+        "snippet": "Supplementation reduced the risk of acute respiratory infection by about 12 percent overall, with a larger effect in deficient individuals.",
         "rawRelevance": 0.95,
-        "publishedAt": "2024-01-24"
+        "publishedAt": "2021-03-01"
       },
       {
-        "url": "https://eia.gov/outlook/data-centres",
-        "title": "Annual Energy Outlook: data centres",
-        "snippet": "Worldwide data centre consumption is projected near 970 TWh in 2030 under the reference case.",
+        "url": "https://www.bmj.com/vitamin-d-respiratory",
+        "title": "Vitamin D and respiratory tract infections: meta-analysis of randomized controlled trials",
+        "snippet": "Pooled data from randomized controlled trials show roughly an 11 percent reduction in respiratory infections.",
         "rawRelevance": 0.9,
-        "publishedAt": "2024-03-10"
+        "publishedAt": "2020-09-10"
       },
       {
-        "url": "https://www.reuters.com/technology/data-centre-power",
-        "title": "Data centre power demand to double by decade end",
-        "snippet": "Analysts expect global data centre electricity use around 960 TWh by 2030.",
-        "rawRelevance": 0.85,
-        "publishedAt": "2024-05-02"
+        "url": "https://www.healthline.com/vitamin-d-immunity",
+        "title": "Vitamin D and immunity",
+        "snippet": "Some studies suggest a modest 10 percent benefit, especially in people who are deficient.",
+        "rawRelevance": 0.7
       },
       {
-        "url": "https://datacenterblog.example/us-projection",
-        "title": "Data centers will need 600 TWh",
-        "snippet": "US data centers alone could consume 600 TWh by 2030, a staggering rise.",
-        "rawRelevance": 0.8,
-        "publishedAt": "2023-11-01"
+        "url": "https://www.mercola.com/vitamin-d-infections",
+        "title": "Vitamin D slashes infections by 50%",
+        "snippet": "High-dose vitamin D can cut your risk of respiratory infection by 50 percent or more.",
+        "rawRelevance": 0.65
+      }
+    ]
+  },
+  {
+    "id": "vitamin-c-cold",
+    "query": "Does vitamin C prevent the common cold?",
+    "expectedTopDomains": ["cochranelibrary.com", "nih.gov"],
+    "contradiction": {
+      "description": "Supplement marketing claims prevention the trials do not support.",
+      "outlierUrl": "https://naturalnews.com/vitamin-c-cure"
+    },
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-c-cold",
+        "title": "Vitamin C for preventing and treating the common cold: systematic review",
+        "snippet": "Regular supplementation did not reduce cold incidence in the general population, about a 3 percent change, though duration was modestly shorter.",
+        "rawRelevance": 0.95
+      },
+      {
+        "url": "https://nih.gov/vitamin-c-factsheet",
+        "title": "Vitamin C fact sheet for health professionals",
+        "snippet": "Routine vitamin C does not appear to prevent colds in most people; effects on duration are small, around 8 percent.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://naturalnews.com/vitamin-c-cure",
+        "title": "Vitamin C prevents and cures colds",
+        "snippet": "Megadoses of vitamin C prevent colds in 90 percent of people.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "intermittent-fasting-t2d",
+    "query": "Is intermittent fasting effective for type 2 diabetes management?",
+    "expectedTopDomains": ["jamanetwork.com", "nice.org.uk"],
+    "sources": [
+      {
+        "url": "https://jamanetwork.com/if-t2d-rct",
+        "title": "Intermittent fasting and glycemic control in type 2 diabetes: a randomized controlled trial",
+        "snippet": "Time-restricted eating improved HbA1c modestly over 6 months in a randomized controlled trial.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://nice.org.uk/guidance/t2d-diet",
+        "title": "Type 2 diabetes: dietary management guidance",
+        "snippet": "Evidence is mixed; intermittent fasting may help some patients but is not recommended universally.",
+        "rawRelevance": 0.88
+      },
+      {
+        "url": "https://draxe.com/fasting-cures-diabetes",
+        "title": "Fasting reverses diabetes",
+        "snippet": "Intermittent fasting can reverse type 2 diabetes for almost everyone.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "statins-primary-prevention",
+    "query": "Do statins reduce cardiovascular events in primary prevention?",
+    "expectedTopDomains": ["cochranelibrary.com", "thelancet.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/statins-primary",
+        "title": "Statins for the primary prevention of cardiovascular disease: systematic review",
+        "snippet": "Statins reduced major vascular events by about 25 percent per mmol/L LDL reduction.",
+        "rawRelevance": 0.95
+      },
+      {
+        "url": "https://www.thelancet.com/statins-ctt",
+        "title": "Efficacy and safety of statin therapy: meta-analysis",
+        "snippet": "Each 1 mmol/L LDL reduction lowered major vascular events by roughly 22 percent.",
+        "rawRelevance": 0.93
+      }
+    ]
+  },
+  {
+    "id": "omega3-cardiovascular",
+    "query": "Do omega-3 supplements prevent cardiovascular disease?",
+    "expectedTopDomains": ["cochranelibrary.com", "nejm.org"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/omega3-cvd",
+        "title": "Omega-3 fatty acids for cardiovascular disease prevention: systematic review",
+        "snippet": "Supplementation had little or no effect on cardiovascular events overall, about a 2 percent change.",
+        "rawRelevance": 0.94
+      },
+      {
+        "url": "https://www.nejm.org/omega3-trial",
+        "title": "Marine n-3 fatty acids and cardiovascular outcomes: a randomized trial",
+        "snippet": "No significant reduction in major cardiovascular events versus placebo.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.webmd.com/omega3",
+        "title": "Omega-3 and heart health",
+        "snippet": "Fish oil may modestly help triglycerides; effects on events are uncertain.",
+        "rawRelevance": 0.6
       }
     ]
   },
   {
     "id": "creatine-cognition",
     "query": "Does creatine supplementation improve cognitive performance?",
-    "expectedTopDomains": ["nature.com", "nih.gov"],
+    "expectedTopDomains": ["examine.com", "nih.gov"],
     "sources": [
       {
-        "url": "https://www.nature.com/articles/creatine-cognition",
-        "title": "Creatine and cognition: a meta-analysis",
-        "snippet": "Pooled results suggest a small improvement in short-term memory, strongest under sleep deprivation.",
+        "url": "https://examine.com/creatine-cognition",
+        "title": "Creatine and cognition: evidence review",
+        "snippet": "A meta-analysis suggests a small benefit to short-term memory, strongest under sleep deprivation.",
+        "rawRelevance": 0.85
+      },
+      {
+        "url": "https://nih.gov/creatine-brain",
+        "title": "Creatine and brain function",
+        "snippet": "Evidence is preliminary; some randomized trials show modest cognitive effects.",
+        "rawRelevance": 0.82
+      }
+    ]
+  },
+  {
+    "id": "mammography-screening-age",
+    "query": "At what age should breast cancer screening with mammography begin?",
+    "expectedTopDomains": ["cochranelibrary.com", "nice.org.uk"],
+    "sources": [
+      {
+        "url": "https://nice.org.uk/guidance/breast-screening",
+        "title": "Breast cancer screening guidance",
+        "snippet": "Routine mammography is recommended from age 50, with individualized discussion earlier.",
         "rawRelevance": 0.9
       },
       {
-        "url": "https://nih.gov/creatine-review",
-        "title": "Creatine supplementation review",
-        "snippet": "Evidence for cognitive benefit is mixed but promising in stressed populations.",
-        "rawRelevance": 0.86
-      },
-      {
-        "url": "https://supplementblog.example/creatine-genius",
-        "title": "Creatine makes you smarter, period",
-        "snippet": "Anecdotes claim dramatic IQ gains from creatine.",
-        "rawRelevance": 0.7
+        "url": "https://www.cochranelibrary.com/cdsr/mammography",
+        "title": "Screening for breast cancer with mammography: systematic review",
+        "snippet": "Benefits and harms are finely balanced; absolute mortality benefit is modest.",
+        "rawRelevance": 0.9
       }
     ]
   },
   {
-    "id": "microplastics-health",
-    "query": "What is the scientific consensus on microplastics and human health?",
-    "expectedTopDomains": ["science.org", "who.int"],
+    "id": "salt-blood-pressure",
+    "query": "Does reducing dietary salt lower blood pressure?",
+    "expectedTopDomains": ["cochranelibrary.com", "who.int"],
     "sources": [
       {
-        "url": "https://www.science.org/microplastics-human-health",
-        "title": "Microplastics in human tissue",
-        "snippet": "Particles are detectable in blood and placenta; health effects remain under active study.",
-        "rawRelevance": 0.92
+        "url": "https://www.cochranelibrary.com/cdsr/salt-bp",
+        "title": "Reduced dietary salt and blood pressure: systematic review and meta-analysis",
+        "snippet": "Salt reduction lowered systolic blood pressure by roughly 4 mmHg on average.",
+        "rawRelevance": 0.94
       },
       {
-        "url": "https://who.int/microplastics-drinking-water",
-        "title": "Microplastics in drinking water",
-        "snippet": "Current evidence does not indicate a clear health risk at observed levels, but data are limited.",
-        "rawRelevance": 0.88
-      },
-      {
-        "url": "https://wellnessblog.example/plastic-panic",
-        "title": "Microplastics are poisoning everyone",
-        "snippet": "Sensational claims of imminent harm without peer-reviewed support.",
-        "rawRelevance": 0.6
+        "url": "https://who.int/salt-reduction",
+        "title": "Salt reduction",
+        "snippet": "Lowering salt intake reduces blood pressure and cardiovascular risk at the population level.",
+        "rawRelevance": 0.9
       }
     ]
   },
   {
-    "id": "ev-battery-cost-2025",
-    "query": "average lithium-ion battery pack cost per kWh 2025",
-    "expectedTopDomains": ["bnef.example", "iea.org"],
+    "id": "probiotics-ibs",
+    "query": "Are probiotics effective for irritable bowel syndrome?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/probiotics-ibs",
+        "title": "Probiotics for irritable bowel syndrome: systematic review",
+        "snippet": "Some strains may improve symptoms, but evidence quality is low to moderate.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://www.bmj.com/ibs-management",
+        "title": "Management of irritable bowel syndrome",
+        "snippet": "Probiotics show a small benefit for global IBS symptoms in pooled trials.",
+        "rawRelevance": 0.88
+      }
+    ]
+  },
+  {
+    "id": "hrt-breast-cancer",
+    "query": "Does hormone replacement therapy increase breast cancer risk?",
+    "expectedTopDomains": ["thelancet.com", "nih.gov"],
     "contradiction": {
-      "description": "An outdated cell-only price misread as a pack price.",
-      "outlierUrl": "https://oldnews.example/battery-300"
+      "description": "An older promotional page understates the risk later trials established.",
+      "outlierUrl": "https://goop.com/hrt-safe"
     },
     "sources": [
       {
-        "url": "https://bnef.example/battery-price-survey",
-        "title": "Battery price survey 2025",
-        "snippet": "Average pack prices fell to about 115 USD per kWh in 2025.",
+        "url": "https://www.thelancet.com/hrt-breast-cancer",
+        "title": "Type and timing of menopausal hormone therapy and breast cancer risk: meta-analysis",
+        "snippet": "Combined HRT increased breast cancer risk by roughly 26 percent with prolonged use.",
+        "rawRelevance": 0.93
+      },
+      {
+        "url": "https://nih.gov/hrt-risk",
+        "title": "Menopausal hormone therapy and cancer risk",
+        "snippet": "Combined estrogen-progestin therapy raises breast cancer risk by about 24 percent.",
         "rawRelevance": 0.9
       },
       {
-        "url": "https://www.iea.org/battery-costs",
-        "title": "Battery costs outlook",
-        "snippet": "Pack prices are near 120 USD per kWh in 2025 and continue to decline.",
-        "rawRelevance": 0.88
-      },
-      {
-        "url": "https://oldnews.example/battery-300",
-        "title": "Batteries still cost 300 per kWh",
-        "snippet": "A 2016 figure of 300 USD per kWh, quoted as if current.",
-        "rawRelevance": 0.7,
-        "publishedAt": "2016-06-01"
-      }
-    ]
-  },
-  {
-    "id": "global-literacy-rate",
-    "query": "global adult literacy rate latest estimate percent",
-    "expectedTopDomains": ["unesco.org", "worldbank.org"],
-    "sources": [
-      {
-        "url": "https://unesco.org/literacy",
-        "title": "Adult literacy",
-        "snippet": "The global adult literacy rate is about 87 percent.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://worldbank.org/literacy-data",
-        "title": "Literacy rate, adult total",
-        "snippet": "World Bank estimates adult literacy near 86 percent.",
-        "rawRelevance": 0.88
-      },
-      {
-        "url": "https://factsblog.example/literacy",
-        "title": "Most adults can read",
-        "snippet": "Roughly 86 to 88 percent of adults worldwide are literate.",
+        "url": "https://goop.com/hrt-safe",
+        "title": "HRT is completely safe",
+        "snippet": "Hormone therapy carries essentially no increased cancer risk, about 1 percent.",
         "rawRelevance": 0.6
       }
     ]
   },
   {
-    "id": "coffee-heart-health",
-    "query": "Is moderate coffee consumption associated with cardiovascular risk?",
-    "expectedTopDomains": ["nejm.example", "ahajournals.example"],
+    "id": "coffee-mortality",
+    "query": "Is moderate coffee consumption associated with lower mortality?",
+    "expectedTopDomains": ["annals.org", "bmj.com"],
     "sources": [
       {
-        "url": "https://nejm.example/coffee-cvd",
-        "title": "Coffee and cardiovascular outcomes",
-        "snippet": "Moderate intake (3 to 4 cups) is associated with lower cardiovascular mortality in cohort studies.",
+        "url": "https://annals.org/coffee-mortality",
+        "title": "Coffee consumption and mortality: a prospective cohort study",
+        "snippet": "Drinking 3 to 4 cups daily was associated with about a 12 percent lower mortality.",
         "rawRelevance": 0.9
       },
       {
-        "url": "https://ahajournals.example/coffee",
-        "title": "Coffee and heart health",
-        "snippet": "Most evidence suggests neutral to modestly protective associations at moderate intake.",
-        "rawRelevance": 0.85
-      },
-      {
-        "url": "https://dietblog.example/coffee-kills",
-        "title": "Coffee wrecks your heart",
-        "snippet": "Claims of severe harm not supported by cohort data.",
-        "rawRelevance": 0.6
-      }
-    ]
-  },
-  {
-    "id": "solar-lcoe-2024",
-    "query": "utility scale solar LCOE 2024 USD per MWh",
-    "expectedTopDomains": ["irena.org", "lazard.example"],
-    "sources": [
-      {
-        "url": "https://irena.org/solar-lcoe",
-        "title": "Renewable power generation costs",
-        "snippet": "Global utility-scale solar LCOE averaged about 44 USD per MWh in 2024.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://lazard.example/lcoe",
-        "title": "Levelized cost of energy",
-        "snippet": "Unsubsidized solar LCOE ranged near 40 to 50 USD per MWh in 2024.",
-        "rawRelevance": 0.86
-      }
-    ]
-  },
-  {
-    "id": "amazon-deforestation-2023",
-    "query": "Brazilian Amazon deforestation change 2023",
-    "expectedTopDomains": ["inpe.example", "nature.com"],
-    "sources": [
-      {
-        "url": "https://inpe.example/prodes-2023",
-        "title": "PRODES deforestation monitoring",
-        "snippet": "Deforestation in the Brazilian Amazon fell about 22 percent in 2023.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://www.nature.com/amazon-2023",
-        "title": "Amazon loss slows",
-        "snippet": "Satellite data indicate a roughly 22 percent decline in clearing during 2023.",
-        "rawRelevance": 0.85
-      }
-    ]
-  },
-  {
-    "id": "who-air-pollution-deaths",
-    "query": "annual deaths attributable to air pollution worldwide",
-    "expectedTopDomains": ["who.int", "thelancet.example"],
-    "sources": [
-      {
-        "url": "https://who.int/air-pollution",
-        "title": "Ambient air pollution",
-        "snippet": "Air pollution is linked to about 7 million premature deaths per year.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://thelancet.example/pollution",
-        "title": "Global burden of pollution",
-        "snippet": "Estimates attribute around 6.7 million deaths annually to air pollution.",
-        "rawRelevance": 0.86
-      }
-    ]
-  },
-  {
-    "id": "remote-work-productivity",
-    "query": "Does remote work increase or decrease productivity?",
-    "expectedTopDomains": ["nber.example", "stanford.edu"],
-    "sources": [
-      {
-        "url": "https://nber.example/remote-productivity",
-        "title": "Remote work and productivity",
-        "snippet": "Hybrid arrangements show small productivity gains and improved retention.",
+        "url": "https://www.bmj.com/coffee-umbrella",
+        "title": "Coffee and health outcomes: umbrella review",
+        "snippet": "Moderate intake is associated with lower all-cause mortality, around 10 percent.",
         "rawRelevance": 0.88
-      },
-      {
-        "url": "https://stanford.edu/wfh-study",
-        "title": "Working from home research",
-        "snippet": "Fully remote effects vary by task; hybrid is broadly neutral to positive.",
-        "rawRelevance": 0.85
-      },
-      {
-        "url": "https://hustleblog.example/remote-lazy",
-        "title": "Remote workers do nothing",
-        "snippet": "Opinion piece asserting large productivity losses without evidence.",
-        "rawRelevance": 0.6
       }
     ]
   },
   {
-    "id": "ozone-layer-recovery",
-    "query": "When is the ozone layer projected to fully recover?",
-    "expectedTopDomains": ["noaa.gov", "unep.example"],
+    "id": "vitamin-e-supplementation",
+    "query": "Does vitamin E supplementation reduce mortality?",
+    "expectedTopDomains": ["cochranelibrary.com", "jamanetwork.com"],
     "sources": [
       {
-        "url": "https://noaa.gov/ozone-recovery",
-        "title": "Ozone layer assessment",
-        "snippet": "The ozone layer is on track to recover to 1980 levels around 2066 over Antarctica.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://unep.example/ozone",
-        "title": "Ozone recovery timeline",
-        "snippet": "Full recovery is expected by roughly 2066 for the Antarctic, earlier elsewhere.",
-        "rawRelevance": 0.85
-      }
-    ]
-  },
-  {
-    "id": "global-internet-users",
-    "query": "number of internet users worldwide 2024 billion",
-    "expectedTopDomains": ["itu.example", "worldbank.org"],
-    "sources": [
-      {
-        "url": "https://itu.example/facts",
-        "title": "Measuring digital development",
-        "snippet": "About 5.4 billion people were online in 2024.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://worldbank.org/internet-users",
-        "title": "Individuals using the internet",
-        "snippet": "Roughly 5.3 billion internet users were recorded in 2024.",
-        "rawRelevance": 0.86
-      }
-    ]
-  },
-  {
-    "id": "vitamin-d-immunity",
-    "query": "Does vitamin D supplementation reduce respiratory infections?",
-    "expectedTopDomains": ["bmj.example", "cochrane.example"],
-    "sources": [
-      {
-        "url": "https://bmj.example/vitamin-d-ri",
-        "title": "Vitamin D and respiratory infections",
-        "snippet": "Meta-analysis finds a small protective effect, largest in deficient individuals.",
-        "rawRelevance": 0.9
-      },
-      {
-        "url": "https://cochrane.example/vitamin-d",
-        "title": "Vitamin D review",
-        "snippet": "Modest reduction in infection risk; effect size is small overall.",
-        "rawRelevance": 0.85
-      }
-    ]
-  },
-  {
-    "id": "sea-level-rise-2100",
-    "query": "projected global sea level rise by 2100 centimeters",
-    "expectedTopDomains": ["ipcc.example", "nasa.gov"],
-    "contradiction": {
-      "description": "A fringe multi-meter figure far outside the assessed range.",
-      "outlierUrl": "https://alarmblog.example/sea-level-5m"
-    },
-    "sources": [
-      {
-        "url": "https://ipcc.example/slr",
-        "title": "Sea level projections",
-        "snippet": "Likely global mean sea level rise is about 44 to 76 cm by 2100 under intermediate scenarios.",
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-e",
+        "title": "Antioxidant supplements including vitamin E for mortality: systematic review",
+        "snippet": "High-dose vitamin E showed no benefit and a possible small increase in mortality.",
         "rawRelevance": 0.92
       },
       {
-        "url": "https://nasa.gov/sea-level",
-        "title": "Sea level change",
-        "snippet": "Projections cluster around 50 to 70 cm by 2100 for moderate emissions.",
-        "rawRelevance": 0.88
-      },
-      {
-        "url": "https://alarmblog.example/sea-level-5m",
-        "title": "Oceans to rise 5 meters by 2100",
-        "snippet": "A claim of 500 cm of rise by 2100, far above assessed ranges.",
-        "rawRelevance": 0.7
+        "url": "https://jamanetwork.com/vitamin-e-meta",
+        "title": "Vitamin E dosage and all-cause mortality: a meta-analysis",
+        "snippet": "High-dose supplementation was associated with a roughly 4 percent higher mortality.",
+        "rawRelevance": 0.9
       }
     ]
   },
   {
-    "id": "gdp-growth-india-2024",
-    "query": "India real GDP growth rate 2024 percent",
-    "expectedTopDomains": ["imf.example", "worldbank.org"],
+    "id": "exercise-depression",
+    "query": "Is exercise an effective treatment for depression?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
     "sources": [
       {
-        "url": "https://imf.example/india-weo",
-        "title": "World Economic Outlook: India",
-        "snippet": "India's real GDP is estimated to grow about 7 percent in 2024.",
+        "url": "https://www.cochranelibrary.com/cdsr/exercise-depression",
+        "title": "Exercise for depression: systematic review and meta-analysis",
+        "snippet": "Exercise produced a moderate reduction in depressive symptoms versus control.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.bmj.com/exercise-depression",
+        "title": "Exercise as treatment for depression: network meta-analysis",
+        "snippet": "Most exercise modalities reduced depression, with effects comparable to some therapies.",
+        "rawRelevance": 0.9
+      }
+    ]
+  },
+  {
+    "id": "zinc-cold-duration",
+    "query": "Does zinc shorten the duration of the common cold?",
+    "expectedTopDomains": ["cochranelibrary.com", "nih.gov"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/zinc-cold",
+        "title": "Zinc for the common cold: systematic review",
+        "snippet": "Zinc lozenges started early may shorten cold duration by roughly 2 days, evidence quality varies.",
         "rawRelevance": 0.9
       },
       {
-        "url": "https://worldbank.org/india-growth",
-        "title": "India growth update",
-        "snippet": "Growth is projected near 6.8 percent for 2024.",
-        "rawRelevance": 0.86
+        "url": "https://nih.gov/zinc-factsheet",
+        "title": "Zinc fact sheet",
+        "snippet": "Some trials suggest zinc may modestly reduce cold duration, by about 1 to 2 days.",
+        "rawRelevance": 0.88
+      }
+    ]
+  },
+  {
+    "id": "low-carb-vs-low-fat",
+    "query": "Is a low-carb diet more effective than low-fat for weight loss?",
+    "expectedTopDomains": ["jamanetwork.com", "nejm.org"],
+    "contradiction": {
+      "description": "A diet-marketing page claims a dramatic advantage trials did not find.",
+      "outlierUrl": "https://draxe.com/keto-melts-fat"
+    },
+    "sources": [
+      {
+        "url": "https://jamanetwork.com/diet-weight-rct",
+        "title": "Low-fat vs low-carbohydrate diet for weight loss: a randomized trial",
+        "snippet": "At 12 months the difference in weight loss was small, about 1 kg, and not significant.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.nejm.org/diet-comparison",
+        "title": "Comparison of weight-loss diets: a randomized trial",
+        "snippet": "Adherence mattered more than macronutrient mix; differences were roughly 2 kg.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://draxe.com/keto-melts-fat",
+        "title": "Keto melts fat 5x faster",
+        "snippet": "Low-carb dieters lost 25 kg, far more than low-fat dieters.",
+        "rawRelevance": 0.6
       }
     ]
   }

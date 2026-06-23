@@ -5,22 +5,17 @@ import type { Source } from '@/lib/types';
 
 const lead: Source[] = [
   {
-    url: 'https://www.iea.org/r',
-    title: 'demand',
-    snippet: 'about 945 TWh by 2030',
+    url: 'https://www.cochranelibrary.com/r',
+    title: 'review',
+    snippet: 'reduced risk by 12 percent',
     rawRelevance: 1,
   },
-  { url: 'https://eia.gov/r', title: 'demand', snippet: 'near 970 TWh in 2030', rawRelevance: 1 },
+  { url: 'https://nih.gov/r', title: 'factsheet', snippet: 'about 12 percent', rawRelevance: 1 },
+  { url: 'https://www.bmj.com/r', title: 'meta', snippet: 'roughly 12 percent', rawRelevance: 1 },
   {
-    url: 'https://reuters.com/r',
-    title: 'demand',
-    snippet: 'around 960 TWh by 2030',
-    rawRelevance: 1,
-  },
-  {
-    url: 'https://blog.example/us',
-    title: 'us',
-    snippet: 'US data centers 600 TWh by 2030',
+    url: 'https://www.mercola.com/r',
+    title: 'blog',
+    snippet: 'cuts risk by 50 percent',
     rawRelevance: 1,
   },
 ];
@@ -28,8 +23,8 @@ const lead: Source[] = [
 describe('corroborationProxy', () => {
   it('clusters comparable values across independent domains and isolates the outlier', () => {
     const counts = corroborationProxy(lead);
-    expect(counts['https://www.iea.org/r']).toBe(2);
-    expect(counts['https://blog.example/us']).toBe(0);
+    expect(counts['https://www.cochranelibrary.com/r']).toBe(2);
+    expect(counts['https://www.mercola.com/r']).toBe(0);
   });
 });
 
@@ -37,11 +32,11 @@ describe('precisionAtK and contradictionDetected', () => {
   const scored = scoreTrust(lead, { corroboratingDomains: corroborationProxy(lead) });
 
   it('puts the expected high-trust domains at the top', () => {
-    expect(precisionAtK(scored, ['iea.org', 'eia.gov'])).toBe(1);
+    expect(precisionAtK(scored, ['cochranelibrary.com', 'nih.gov'])).toBe(1);
   });
 
   it('flags the labeled outlier as a contradiction', () => {
-    expect(contradictionDetected(scored, 'https://blog.example/us')).toBe(true);
-    expect(contradictionDetected(scored, 'https://www.iea.org/r')).toBe(false);
+    expect(contradictionDetected(scored, 'https://www.mercola.com/r')).toBe(true);
+    expect(contradictionDetected(scored, 'https://www.cochranelibrary.com/r')).toBe(false);
   });
 });
