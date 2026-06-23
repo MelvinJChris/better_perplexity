@@ -2,12 +2,13 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { streamSearch } from '@/lib/client/searchStream';
-import type { ScoredSource } from '@/lib/types';
+import type { ScoredSource, VerifiedAnswer } from '@/lib/types';
 import type { QueryTrace } from '@/lib/trace/trace';
 import { AnswerBlock } from './AnswerBlock';
 import { AskHero } from './AskHero';
 import { QueryForm } from './QueryForm';
 import { SourceList } from './SourceList';
+import { ScopeBanner, VerificationPanel } from './VerificationPanel';
 
 type Status = 'idle' | 'streaming' | 'done' | 'error';
 
@@ -16,6 +17,7 @@ export function SearchApp() {
   const [submitted, setSubmitted] = useState('');
   const [sources, setSources] = useState<ScoredSource[]>([]);
   const [answer, setAnswer] = useState('');
+  const [verified, setVerified] = useState<VerifiedAnswer | null>(null);
   const [trace, setTrace] = useState<QueryTrace | null>(null);
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
@@ -32,6 +34,7 @@ export function SearchApp() {
     setStatus('streaming');
     setSources([]);
     setAnswer('');
+    setVerified(null);
     setTrace(null);
     setError('');
 
@@ -43,6 +46,9 @@ export function SearchApp() {
             break;
           case 'token':
             setAnswer((prev) => prev + event.text);
+            break;
+          case 'verification':
+            setVerified(event.verified);
             break;
           case 'trace':
             setTrace(event.trace);
@@ -126,7 +132,8 @@ export function SearchApp() {
             >
               Answer
             </h2>
-            <div className="mt-3">
+            <div className="mt-3 space-y-3">
+              {verified?.scopeMismatch ? <ScopeBanner note={verified.scopeMismatch} /> : null}
               {answer ? (
                 <AnswerBlock text={answer} streaming={streaming} />
               ) : streaming ? (
@@ -134,6 +141,7 @@ export function SearchApp() {
               ) : (
                 <p className="text-sm text-muted">No answer was produced.</p>
               )}
+              {verified ? <VerificationPanel verified={verified} /> : null}
             </div>
           </section>
 
