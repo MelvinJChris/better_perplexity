@@ -28,7 +28,7 @@ Requires Node 22 and pnpm.
 
 ```bash
 pnpm install
-pnpm test          # 84 deterministic unit tests
+pnpm test          # 114 deterministic unit tests
 pnpm lint          # eslint
 pnpm typecheck     # tsc --noEmit
 pnpm eval          # eval harness, prints the five metrics (offline, no keys)
@@ -71,9 +71,12 @@ One Next.js app, one Cloud Run request, streamed to the client. The pipeline
 6. **Trace**: sources, scores, model, tokens, and latency are logged as one
    structured line and streamed to the client.
 
-The response is NDJSON: a `sources` event, then `token` events, then a
-`verification` event, then a `trace`. Errors are a terminal `error` event, so the
-stream always closes cleanly. The handler is stateless and safe to retry.
+The response is NDJSON, one event per line: `sources` (trust-scored), a
+`contradictions` event carrying the knowledge graph, streamed `token`s,
+`verification`, `followups`, and a `trace`. A failed synthesis (e.g. a rate
+limit) degrades to an `answer_error` while the sources, trust layer, and graph
+still render; only a retrieval failure is a terminal `error`. The stream always
+closes cleanly; the handler is stateless and safe to retry.
 
 ### Two decisions worth pointing at
 
@@ -84,12 +87,15 @@ stream always closes cleanly. The handler is stateless and safe to retry.
   rewrite. All external calls run through a rate-limit queue with bounded
   concurrency, RPM spacing, and full-jitter exponential backoff, because the free
   tiers 429 under bursts.
-- **The trust layer is the product.** Domain prior is a small curated table plus
-  TLD heuristics; corroboration counts how many _independent_ domains agree by
-  embedding similarity (a site cannot corroborate itself, and syndication does not
-  inflate it); the corroboration spectrum plots comparable numbers on one axis so
-  the agreeing cluster clumps and outliers sit apart. Every model output is
-  validated through a zod schema; raw model text is never trusted.
+- **The trust layer is the product, and it is the visual identity.** Domain prior
+  is a curated clinical table plus TLD heuristics; corroboration counts how many
+  _independent_ domains agree by embedding similarity (a site cannot corroborate
+  itself, and syndication does not inflate it); an evidence-level signal weights
+  by study type. The UI leads with a confidence **verdict**, renders each source
+  as a credibility scorecard (score ring, kind, evidence badge, corroboration),
+  plots comparable numbers on a **corroboration spectrum**, draws a **knowledge
+  graph** of agreement vs disagreement, and verifies every sentence inline. Every
+  model output is validated through a zod schema; raw model text is never trusted.
 
 ## Measured metrics
 
@@ -111,14 +117,17 @@ contradiction are computed against the real `scoreTrust`.
 
 ```
 app/                  UI (chat) + /api/search route handler (streamed NDJSON)
-  components/         hero, source cards, trust meter, corroboration spectrum, verification
-lib/
+  components/         hero, verdict, source scorecards (score ring), corroboration
+                      spectrum, knowledge graph, verification, follow-ups
+lib/                  metrics, snippet, trust, eval helpers
   providers/          llmProvider (Gemini), searchProvider (Tavily + Exa), rate-limit queue
-  pipeline/           dedupe, corroboration, scoreTrust, synthesize, verify, extractClaims, runSearch
+  pipeline/           dedupe, corroboration, evidence, scoreTrust, synthesize, verify,
+                      extractClaims, contradictionGraph, runSearch
   trace/              per-query trace and cost model
   client/             NDJSON stream parser
-eval/                 hand-labeled dataset, harness (pnpm eval), demo queries
+eval/                 hand-labeled clinical dataset, harness (pnpm eval), demo queries
 tests/                deterministic unit tests
+.github/workflows/    ci (lint/typecheck/test) + deploy (Cloud Run on push to main)
 Dockerfile            Next standalone image for Cloud Run
 ```
 
@@ -127,15 +136,21 @@ Dockerfile            Next standalone image for Cloud Run
 The container is a multi-stage build of the Next standalone output (small image,
 non-root, runtime is `node server.js`):
 
+Deploys are automated: **pushing to `main`** runs `.github/workflows/deploy.yml`,
+which authenticates with a service-account secret (`GCP_SA_KEY`) and runs the
+deploy below. A redeploy preserves the env-var keys and public IAM, so CI never
+needs the LLM keys. Develop locally on `dev`/feature branches and PR into `main`;
+staging is not used.
+
 ```bash
 docker build -t better-perplexity .
 docker run -p 8080:8080 --env-file .env better-perplexity   # http://localhost:8080
 
-# Cloud Run (tracks main in production):
+# What the workflow runs (first time, keys are set explicitly):
 gcloud run deploy better-perplexity --source . \
-  --region <region> --allow-unauthenticated \
+  --region us-central1 --allow-unauthenticated \
   --timeout 120 --concurrency 4 --min-instances 0 --max-instances 5 \
-  --set-secrets GEMINI_API_KEY=...,TAVILY_API_KEY=...,EXA_API_KEY=...
+  --set-env-vars GEMINI_API_KEY=...,TAVILY_API_KEY=...,EXA_API_KEY=...
 ```
 
 The Cloud Run settings are deliberate: the request **timeout** sits above the
@@ -157,9 +172,13 @@ retry. Live at https://better-perplexity-949650831527.us-central1.run.app
   graph), but running an LLM extraction per source is the single biggest cost and
   latency lever, so the core path avoids it: one batched embedding call gives the
   corroboration signal cheaply. That is the one lever that moves cost per query.
-- **Contradiction graph (consensus vs disputed view) is a stretch and not built.**
-  It was scoped to be the first thing cut if behind; verification + the
-  corroboration spectrum already surface disagreement.
+- **The contradiction graph, evidence level, and corroboration are heuristic, not
+  claim-level.** They run over source-level text and embeddings (cheap, no extra
+  LLM calls) rather than extracted atomic claims; `extractClaims` exists as the
+  building block for a future claim-level upgrade. Enough to surface disagreement
+  and downrank junk, not a substitute for expert review.
+- **No cross-session persistence.** Follow-ups thread within a session only; a
+  refresh starts fresh.
 
 ## Testing
 
@@ -167,7 +186,8 @@ Strict TDD for deterministic code (trust math, dedupe and corroboration
 thresholds, the rate-limit queue and backoff, client and model-output parsing,
 schema validation). LLM-dependent behavior is measured by the eval harness, not
 brittle assertions: a hand-labeled set scored for trust ranking and contradiction
-recall. CI (GitHub Actions) runs lint, typecheck, and tests on every push.
+recall. CI (GitHub Actions) runs lint, typecheck, and tests on every push and PR;
+pushing to `main` additionally deploys to Cloud Run.
 
 ## License
 
