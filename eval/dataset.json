@@ -1,0 +1,347 @@
+[
+  {
+    "id": "vitamin-d-respiratory",
+    "query": "Does vitamin D supplementation reduce the risk of respiratory infections?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
+    "contradiction": {
+      "description": "A supplement page claims a far larger effect than the meta-analyses.",
+      "outlierUrl": "https://www.mercola.com/vitamin-d-infections"
+    },
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-d-ari",
+        "title": "Vitamin D for preventing acute respiratory infections: a systematic review and meta-analysis",
+        "snippet": "Supplementation reduced the risk of acute respiratory infection by about 12 percent overall, with a larger effect in deficient individuals.",
+        "rawRelevance": 0.95,
+        "publishedAt": "2021-03-01"
+      },
+      {
+        "url": "https://www.bmj.com/vitamin-d-respiratory",
+        "title": "Vitamin D and respiratory tract infections: meta-analysis of randomized controlled trials",
+        "snippet": "Pooled data from randomized controlled trials show roughly an 11 percent reduction in respiratory infections.",
+        "rawRelevance": 0.9,
+        "publishedAt": "2020-09-10"
+      },
+      {
+        "url": "https://www.healthline.com/vitamin-d-immunity",
+        "title": "Vitamin D and immunity",
+        "snippet": "Some studies suggest a modest 10 percent benefit, especially in people who are deficient.",
+        "rawRelevance": 0.7
+      },
+      {
+        "url": "https://www.mercola.com/vitamin-d-infections",
+        "title": "Vitamin D slashes infections by 50%",
+        "snippet": "High-dose vitamin D can cut your risk of respiratory infection by 50 percent or more.",
+        "rawRelevance": 0.65
+      }
+    ]
+  },
+  {
+    "id": "vitamin-c-cold",
+    "query": "Does vitamin C prevent the common cold?",
+    "expectedTopDomains": ["cochranelibrary.com", "nih.gov"],
+    "contradiction": {
+      "description": "Supplement marketing claims prevention the trials do not support.",
+      "outlierUrl": "https://naturalnews.com/vitamin-c-cure"
+    },
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-c-cold",
+        "title": "Vitamin C for preventing and treating the common cold: systematic review",
+        "snippet": "Regular supplementation did not reduce cold incidence in the general population, about a 3 percent change, though duration was modestly shorter.",
+        "rawRelevance": 0.95
+      },
+      {
+        "url": "https://nih.gov/vitamin-c-factsheet",
+        "title": "Vitamin C fact sheet for health professionals",
+        "snippet": "Routine vitamin C does not appear to prevent colds in most people; effects on duration are small, around 8 percent.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://naturalnews.com/vitamin-c-cure",
+        "title": "Vitamin C prevents and cures colds",
+        "snippet": "Megadoses of vitamin C prevent colds in 90 percent of people.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "intermittent-fasting-t2d",
+    "query": "Is intermittent fasting effective for type 2 diabetes management?",
+    "expectedTopDomains": ["jamanetwork.com", "nice.org.uk"],
+    "sources": [
+      {
+        "url": "https://jamanetwork.com/if-t2d-rct",
+        "title": "Intermittent fasting and glycemic control in type 2 diabetes: a randomized controlled trial",
+        "snippet": "Time-restricted eating improved HbA1c modestly over 6 months in a randomized controlled trial.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://nice.org.uk/guidance/t2d-diet",
+        "title": "Type 2 diabetes: dietary management guidance",
+        "snippet": "Evidence is mixed; intermittent fasting may help some patients but is not recommended universally.",
+        "rawRelevance": 0.88
+      },
+      {
+        "url": "https://draxe.com/fasting-cures-diabetes",
+        "title": "Fasting reverses diabetes",
+        "snippet": "Intermittent fasting can reverse type 2 diabetes for almost everyone.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "statins-primary-prevention",
+    "query": "Do statins reduce cardiovascular events in primary prevention?",
+    "expectedTopDomains": ["cochranelibrary.com", "thelancet.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/statins-primary",
+        "title": "Statins for the primary prevention of cardiovascular disease: systematic review",
+        "snippet": "Statins reduced major vascular events by about 25 percent per mmol/L LDL reduction.",
+        "rawRelevance": 0.95
+      },
+      {
+        "url": "https://www.thelancet.com/statins-ctt",
+        "title": "Efficacy and safety of statin therapy: meta-analysis",
+        "snippet": "Each 1 mmol/L LDL reduction lowered major vascular events by roughly 22 percent.",
+        "rawRelevance": 0.93
+      }
+    ]
+  },
+  {
+    "id": "omega3-cardiovascular",
+    "query": "Do omega-3 supplements prevent cardiovascular disease?",
+    "expectedTopDomains": ["cochranelibrary.com", "nejm.org"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/omega3-cvd",
+        "title": "Omega-3 fatty acids for cardiovascular disease prevention: systematic review",
+        "snippet": "Supplementation had little or no effect on cardiovascular events overall, about a 2 percent change.",
+        "rawRelevance": 0.94
+      },
+      {
+        "url": "https://www.nejm.org/omega3-trial",
+        "title": "Marine n-3 fatty acids and cardiovascular outcomes: a randomized trial",
+        "snippet": "No significant reduction in major cardiovascular events versus placebo.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.webmd.com/omega3",
+        "title": "Omega-3 and heart health",
+        "snippet": "Fish oil may modestly help triglycerides; effects on events are uncertain.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "creatine-cognition",
+    "query": "Does creatine supplementation improve cognitive performance?",
+    "expectedTopDomains": ["examine.com", "nih.gov"],
+    "sources": [
+      {
+        "url": "https://examine.com/creatine-cognition",
+        "title": "Creatine and cognition: evidence review",
+        "snippet": "A meta-analysis suggests a small benefit to short-term memory, strongest under sleep deprivation.",
+        "rawRelevance": 0.85
+      },
+      {
+        "url": "https://nih.gov/creatine-brain",
+        "title": "Creatine and brain function",
+        "snippet": "Evidence is preliminary; some randomized trials show modest cognitive effects.",
+        "rawRelevance": 0.82
+      }
+    ]
+  },
+  {
+    "id": "mammography-screening-age",
+    "query": "At what age should breast cancer screening with mammography begin?",
+    "expectedTopDomains": ["cochranelibrary.com", "nice.org.uk"],
+    "sources": [
+      {
+        "url": "https://nice.org.uk/guidance/breast-screening",
+        "title": "Breast cancer screening guidance",
+        "snippet": "Routine mammography is recommended from age 50, with individualized discussion earlier.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/mammography",
+        "title": "Screening for breast cancer with mammography: systematic review",
+        "snippet": "Benefits and harms are finely balanced; absolute mortality benefit is modest.",
+        "rawRelevance": 0.9
+      }
+    ]
+  },
+  {
+    "id": "salt-blood-pressure",
+    "query": "Does reducing dietary salt lower blood pressure?",
+    "expectedTopDomains": ["cochranelibrary.com", "who.int"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/salt-bp",
+        "title": "Reduced dietary salt and blood pressure: systematic review and meta-analysis",
+        "snippet": "Salt reduction lowered systolic blood pressure by roughly 4 mmHg on average.",
+        "rawRelevance": 0.94
+      },
+      {
+        "url": "https://who.int/salt-reduction",
+        "title": "Salt reduction",
+        "snippet": "Lowering salt intake reduces blood pressure and cardiovascular risk at the population level.",
+        "rawRelevance": 0.9
+      }
+    ]
+  },
+  {
+    "id": "probiotics-ibs",
+    "query": "Are probiotics effective for irritable bowel syndrome?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/probiotics-ibs",
+        "title": "Probiotics for irritable bowel syndrome: systematic review",
+        "snippet": "Some strains may improve symptoms, but evidence quality is low to moderate.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://www.bmj.com/ibs-management",
+        "title": "Management of irritable bowel syndrome",
+        "snippet": "Probiotics show a small benefit for global IBS symptoms in pooled trials.",
+        "rawRelevance": 0.88
+      }
+    ]
+  },
+  {
+    "id": "hrt-breast-cancer",
+    "query": "Does hormone replacement therapy increase breast cancer risk?",
+    "expectedTopDomains": ["thelancet.com", "nih.gov"],
+    "contradiction": {
+      "description": "An older promotional page understates the risk later trials established.",
+      "outlierUrl": "https://goop.com/hrt-safe"
+    },
+    "sources": [
+      {
+        "url": "https://www.thelancet.com/hrt-breast-cancer",
+        "title": "Type and timing of menopausal hormone therapy and breast cancer risk: meta-analysis",
+        "snippet": "Combined HRT increased breast cancer risk by roughly 26 percent with prolonged use.",
+        "rawRelevance": 0.93
+      },
+      {
+        "url": "https://nih.gov/hrt-risk",
+        "title": "Menopausal hormone therapy and cancer risk",
+        "snippet": "Combined estrogen-progestin therapy raises breast cancer risk by about 24 percent.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://goop.com/hrt-safe",
+        "title": "HRT is completely safe",
+        "snippet": "Hormone therapy carries essentially no increased cancer risk, about 1 percent.",
+        "rawRelevance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "coffee-mortality",
+    "query": "Is moderate coffee consumption associated with lower mortality?",
+    "expectedTopDomains": ["annals.org", "bmj.com"],
+    "sources": [
+      {
+        "url": "https://annals.org/coffee-mortality",
+        "title": "Coffee consumption and mortality: a prospective cohort study",
+        "snippet": "Drinking 3 to 4 cups daily was associated with about a 12 percent lower mortality.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://www.bmj.com/coffee-umbrella",
+        "title": "Coffee and health outcomes: umbrella review",
+        "snippet": "Moderate intake is associated with lower all-cause mortality, around 10 percent.",
+        "rawRelevance": 0.88
+      }
+    ]
+  },
+  {
+    "id": "vitamin-e-supplementation",
+    "query": "Does vitamin E supplementation reduce mortality?",
+    "expectedTopDomains": ["cochranelibrary.com", "jamanetwork.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/vitamin-e",
+        "title": "Antioxidant supplements including vitamin E for mortality: systematic review",
+        "snippet": "High-dose vitamin E showed no benefit and a possible small increase in mortality.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://jamanetwork.com/vitamin-e-meta",
+        "title": "Vitamin E dosage and all-cause mortality: a meta-analysis",
+        "snippet": "High-dose supplementation was associated with a roughly 4 percent higher mortality.",
+        "rawRelevance": 0.9
+      }
+    ]
+  },
+  {
+    "id": "exercise-depression",
+    "query": "Is exercise an effective treatment for depression?",
+    "expectedTopDomains": ["cochranelibrary.com", "bmj.com"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/exercise-depression",
+        "title": "Exercise for depression: systematic review and meta-analysis",
+        "snippet": "Exercise produced a moderate reduction in depressive symptoms versus control.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.bmj.com/exercise-depression",
+        "title": "Exercise as treatment for depression: network meta-analysis",
+        "snippet": "Most exercise modalities reduced depression, with effects comparable to some therapies.",
+        "rawRelevance": 0.9
+      }
+    ]
+  },
+  {
+    "id": "zinc-cold-duration",
+    "query": "Does zinc shorten the duration of the common cold?",
+    "expectedTopDomains": ["cochranelibrary.com", "nih.gov"],
+    "sources": [
+      {
+        "url": "https://www.cochranelibrary.com/cdsr/zinc-cold",
+        "title": "Zinc for the common cold: systematic review",
+        "snippet": "Zinc lozenges started early may shorten cold duration by roughly 2 days, evidence quality varies.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://nih.gov/zinc-factsheet",
+        "title": "Zinc fact sheet",
+        "snippet": "Some trials suggest zinc may modestly reduce cold duration, by about 1 to 2 days.",
+        "rawRelevance": 0.88
+      }
+    ]
+  },
+  {
+    "id": "low-carb-vs-low-fat",
+    "query": "Is a low-carb diet more effective than low-fat for weight loss?",
+    "expectedTopDomains": ["jamanetwork.com", "nejm.org"],
+    "contradiction": {
+      "description": "A diet-marketing page claims a dramatic advantage trials did not find.",
+      "outlierUrl": "https://draxe.com/keto-melts-fat"
+    },
+    "sources": [
+      {
+        "url": "https://jamanetwork.com/diet-weight-rct",
+        "title": "Low-fat vs low-carbohydrate diet for weight loss: a randomized trial",
+        "snippet": "At 12 months the difference in weight loss was small, about 1 kg, and not significant.",
+        "rawRelevance": 0.92
+      },
+      {
+        "url": "https://www.nejm.org/diet-comparison",
+        "title": "Comparison of weight-loss diets: a randomized trial",
+        "snippet": "Adherence mattered more than macronutrient mix; differences were roughly 2 kg.",
+        "rawRelevance": 0.9
+      },
+      {
+        "url": "https://draxe.com/keto-melts-fat",
+        "title": "Keto melts fat 5x faster",
+        "snippet": "Low-carb dieters lost 25 kg, far more than low-fat dieters.",
+        "rawRelevance": 0.6
+      }
+    ]
+  }
+]
