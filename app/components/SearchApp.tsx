@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { streamSearch } from '@/lib/client/searchStream';
 import { AskHero } from './AskHero';
 import { QueryForm } from './QueryForm';
@@ -10,6 +10,17 @@ export function SearchApp() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const nextId = useRef(0);
+
+  // Bring each newly added turn into view; otherwise a follow-up answer renders
+  // below the fold and looks like nothing happened (#77).
+  const lastTurnId = turns[turns.length - 1]?.id;
+  useEffect(() => {
+    if (lastTurnId === undefined) return;
+    const el = document.getElementById(`turn-${lastTurnId}`);
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }, [lastTurnId]);
 
   const patchTurn = useCallback((id: number, patch: Partial<Turn>) => {
     setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));

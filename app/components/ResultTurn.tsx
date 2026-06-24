@@ -46,7 +46,10 @@ export function ResultTurn({
 
   if (turn.status === 'error') {
     return (
-      <article className="animate-reveal border-t border-hairline pt-6 first:border-t-0 first:pt-0">
+      <article
+        id={`turn-${turn.id}`}
+        className="animate-reveal border-t border-hairline pt-6 first:border-t-0 first:pt-0"
+      >
         <h1 className="text-lg font-semibold tracking-tight text-ink">{turn.query}</h1>
         <div
           role="alert"
@@ -67,7 +70,10 @@ export function ResultTurn({
   }
 
   return (
-    <article className="animate-reveal border-t border-hairline pt-6 first:border-t-0 first:pt-0">
+    <article
+      id={`turn-${turn.id}`}
+      className="animate-reveal border-t border-hairline pt-6 first:border-t-0 first:pt-0"
+    >
       <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">{turn.query}</h1>
 
       {/* Answer first: the prose plus a trust verdict, in a prominent card. */}
