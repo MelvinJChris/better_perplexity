@@ -1,5 +1,5 @@
 import { sourceKind } from '@/lib/pipeline/domainPrior';
-import { cleanSnippet } from '@/lib/snippet';
+import { previewSnippet } from '@/lib/snippet';
 import { trustTier, type TrustTier } from '@/lib/trust';
 import type { ScoredSource } from '@/lib/types';
 import { ScoreRing } from './ScoreRing';
@@ -83,7 +83,7 @@ export function SourceCard({ index, source }: { index: number; source: ScoredSou
 
       {source.snippet ? (
         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
-          {cleanSnippet(source.snippet)}
+          {previewSnippet(source.snippet)}
         </p>
       ) : null}
     </li>
