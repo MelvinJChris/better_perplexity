@@ -7,6 +7,8 @@ and returns an answer where every claim is cited and auditable. The difference
 from a plain search chatbot is that you can see _why_ a source was trusted or
 downranked.
 
+**Live:** https://better-perplexity-949650831527.us-central1.run.app
+
 ## Why this, and why a vertical
 
 Naive RAG trusts its sources blindly. Making credibility and cross-source
@@ -141,7 +143,8 @@ loop p95, **concurrency** is lowered because each request is LLM-heavy,
 **min-instances 0** keeps idle cost at zero (a cold start is acceptable for an
 interactive demo), and **max-instances** is capped to bound spend. State lives in
 the request, never in instance memory, so requests are idempotent and safe to
-retry. A live URL is not yet provisioned in this repo.
+retry. Live at https://better-perplexity-949650831527.us-central1.run.app
+(min-instances 0, so the first request after idle cold-starts in ~1.5s).
 
 ## Trade-offs and what was cut
 
