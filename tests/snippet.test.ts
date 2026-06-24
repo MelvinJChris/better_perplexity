@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanSnippet } from '@/lib/snippet';
+import { cleanSnippet, previewSnippet } from '@/lib/snippet';
 
 describe('cleanSnippet', () => {
   it('strips heading markers', () => {
@@ -22,5 +22,27 @@ describe('cleanSnippet', () => {
     expect(cleanSnippet('Vitamin D reduced risk by about 12 percent.')).toBe(
       'Vitamin D reduced risk by about 12 percent.',
     );
+  });
+});
+
+describe('previewSnippet', () => {
+  it('truncates to a sentence boundary, dropping trailing junk', () => {
+    const raw =
+      'A supplementation of 0.2 g/day of vitamin C may be reasonable in subjects with low plasma vitamin C concentration. Subjects with NCDsImage and more trailing text that runs well past the limit here.';
+    expect(previewSnippet(raw, 120)).toBe(
+      'A supplementation of 0.2 g/day of vitamin C may be reasonable in subjects with low plasma vitamin C concentration.',
+    );
+  });
+
+  it('falls back to a word boundary with an ellipsis when no sentence end fits', () => {
+    const raw = 'wordone wordtwo wordthree wordfour wordfive wordsix wordseven wordeight';
+    const out = previewSnippet(raw, 30);
+    expect(out.endsWith('…')).toBe(true);
+    expect(out).not.toContain('word eight');
+    expect(out.length).toBeLessThanOrEqual(31);
+  });
+
+  it('returns short snippets unchanged', () => {
+    expect(previewSnippet('Short and clean.', 220)).toBe('Short and clean.');
   });
 });

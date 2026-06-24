@@ -13,3 +13,22 @@ export function cleanSnippet(text: string): string {
     .replace(/\s+/g, ' ') // collapse whitespace
     .trim();
 }
+
+/** A clean card preview: cleaned, then cut to the last sentence boundary within
+ *  `maxChars` (falling back to a word boundary plus an ellipsis), so the preview
+ *  reads as a complete thought instead of a hard mid-word cut. */
+export function previewSnippet(text: string, maxChars = 220): string {
+  const clean = cleanSnippet(text);
+  if (clean.length <= maxChars) return clean;
+
+  const slice = clean.slice(0, maxChars);
+  const sentenceEnd = Math.max(
+    slice.lastIndexOf('. '),
+    slice.lastIndexOf('! '),
+    slice.lastIndexOf('? '),
+  );
+  if (sentenceEnd >= maxChars * 0.5) return slice.slice(0, sentenceEnd + 1);
+
+  const wordEnd = slice.lastIndexOf(' ');
+  return `${(wordEnd > 0 ? slice.slice(0, wordEnd) : slice).trimEnd()}…`;
+}
